@@ -1,5 +1,11 @@
 ## Try KAVM
 
+KAVM provides property-tetsing capabilities to any Algorand smart contract:
+
+![failing-test.gif](https://user-images.githubusercontent.com/8296326/203583716-e8937d02-f186-4862-b36c-26abc3cdf578.gif)
+
+Read on if you'd like to learn more!
+
 ### How to install KAVM
 
 #### Install kup tool
@@ -145,108 +151,13 @@ $ poetry run prop-test kcoin_vault/test_mint_burn.py
 
 ![failing-test.gif](https://user-images.githubusercontent.com/8296326/203583716-e8937d02-f186-4862-b36c-26abc3cdf578.gif)
 
+The scary red output indicates that Hypothesis has found a value of the `microalgos` parameter that violates the `got_back == microalgos` assertion. The message essentially says that we have minted with 169869 microalgos, but only got 169868 back
+
 ```
-if __name__ == '__main__':
-    _, method_name, x, y = sys.argv
-    comp = KAVMAtomicTransactionComposer()
-    comp.add_method_call(
-        app_id, contact.get_method_by_name(method_name), caller_addr, sp, signer, method_args=[int(x), int(y)]
-    )
-    try:
-        resp = comp.execute(client, 2)
-        for result in resp.abi_results:
-            print(f"{result.method.name} => {result.return_value}")
-    except error.AlgodHTTPError as e:
-        print(json.dumps(client._last_scenario.dictify(), indent=2))
-        print(f'^^^^^^^^^^^^^^^^^^ Last attempted scenario ^^^^^^^^^^^^^^^^^^')
-        print(f'KAVM has failed to execute contract\'s method {method_name} with arguments {x} and {y}')
+- during generate phase (5.62 seconds):
+  - Typical runtimes: 387-554 ms, ~ 0% in data generation
+  - 11 passing examples, 1 failing examples, 0 invalid examples
+  - Found 1 distinct error in this phase
+
+- Stopped because nothing left to do
 ```
-
-We use the slightly modified version of `py-algorand-sdk`'s [`AtomicTransactionComposer`](https://py-algorand-sdk.readthedocs.io/en/latest/algosdk/atomic_transaction_composer.html?highlight=Atomic#algosdk.atomic_transaction_composer.AtomicTransactionComposer) class to make a call to the contract's methods.
-
-We can now use the KAVM and the contract as a very weird, well, calculator:
-
-```bash
-$ python interact_kavm.py add 1 2
-TXID:  P5VCGT7OUAZYFY4A6CLMA4WOPIR2J55NPZCY7Q5NA2UTTE6DHQ5A
-Result confirmed in round: 1
-Created new app with app-id  1
-add => 3
-```
-
-Hooray! The contract was "deployed" onto KAVM and the method `'add'` was executed with the arguments `1` and `2`, giving `3` as the result. Let's execute a couple of more calls:
-
-```bash
-$ python interact_kavm.py mul 100 3
-TXID:  ZZFAX54Q342B56KFH3NQKS3EILDMM5YBJUVFR5A7HDUX6L7LXJQA
-Result confirmed in round: 1
-Created new app with app-id  1
-mul => 300
-
-$ python interact_kavm.py sub 100 99
-TXID:  GRFTR7FQ3XEONRU7ROCSOZIMKLOWAFUW2K6JTKART6SLNFWFMXAA
-Result confirmed in round: 1
-Created new app with app-id  1
-sub => 1
-```
-
-Let's now do something naughty:
-
-```bash
-$ python interact_kavm.py div 42 0
-TXID:  RW6VVGFPNN4X4XJWKFRVQEUOAZGTW33XWZNVM3FARQILUKJEZF6A
-Result confirmed in round: 1
-Created new app with app-id  1
-Contract has regected the call to method div with arguments 42 and 0
-```
-
-It's not surprise that the contract's approval program refused the transaction that tried to divide by zero. However, we only now which arguments are undesirable because the contact is very simple: it's just a calculator! If it was something more complicated, we'd need some more advanced methods to find the bad inputs. Let's try out one such method on this simple example.
-
-#### Testing the contract with Hypothesis
-
-[Hypothesis](https://hypothesis.readthedocs.io/en/latest/index.html) is a property testing framework that integrates well with `pytest` and provides an easy way to run any Python function with randomized inputs. The idea it is run the methods of the calculator contracts with integer arguments generated according to a certain *strategy* and find out which arguments cause the contract to reject the transaction.
-
-Let's declare a test function to execute the described scenario:
-
-```python
-MAX_ARG_VALUE = 2**64 - 1
-MIN_ARG_VALUE = MAX_ARG_VALUE / 4
-
-@settings(deadline=(timedelta(seconds=2)), max_examples=25, phases=[Phase.generate])
-@given(
-    x=st.integers(min_value=MIN_ARG_VALUE, max_value=MAX_ARG_VALUE),
-    y=st.integers(min_value=MIN_ARG_VALUE, max_value=MAX_ARG_VALUE),
-)
-def test_method_add(x: int, y: int) -> Optional[int]:
-    method_name = 'add'
-    comp = KAVMAtomicTransactionComposer()
-    comp.add_method_call(app_id, contact.get_method_by_name(method_name), caller_addr, sp, signer, method_args=[x, y])
-    resp = comp.execute(client, 2)
-    assert resp.abi_results[0].return_value == x + y
-```
-
-You can easily see that this is just a modified variant of the `__main__` function that we wrote to try the contact out, specialized to the `'add'` method. We ask Hypothesis to generate 25 pairs of integer numbers in certain range and run the code on every input. At the end, we assert that the result returned by the contract is in fact the sum. Let's run the tests with `pytest` and see what happens:
-
-```bash
-$ python -m pytest --tb=short --hypothesis-show-statistics interact_kavm.py
-...
-E   algosdk.error.AlgodHTTPError: KAVM has failed, rerun witn --log-level=ERROR to see the executed JSON scenario
-E   Falsifying example: test_method_add(
-E       x=4611686018427423219, y=17205414141096452043,
-E   )
---------------------------------- Captured stdout setup ---------------------------------
-TXID:  2HLZPUBA5AC4O3ZEM5GGNRAE6TLBXT47OKGT3Q2JSCB3ZJE3FPHA
-Result confirmed in round: 1
-Created new app with app-id  1
-================================= Hypothesis Statistics =================================
-interact_kavm.py::test_method_add:
-
-  - during generate phase (2.27 seconds):
-    - Typical runtimes: 277-470 ms, ~ 0% in data generation
-    - 6 passing examples, 1 failing examples, 0 invalid examples
-    - Found 1 distinct error in this phase
-
-  - Stopped because nothing left to do
-```
-
-Hypothesis found a pair of inputs that causes the contract to reject the transaction! Why? Remember that TEAL operates with integer of type `uint64`, i.e. we try to add to values that generate a result greater than `2**64 - 1`, the TEAL's `+` opcode will trigger an integer overflow error, halting the program and rejecting the calling transaction.
