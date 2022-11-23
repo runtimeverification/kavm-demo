@@ -143,7 +143,7 @@ Let's see what KAVM and Hypothesis think about it:
 $ poetry run prop-test kcoin_vault/test_mint_burn.py
 ```
 
-<<<<<<<<<<<<<< GIF >>>>>>>>>>>>>>
+![failing-test.gif](https://user-images.githubusercontent.com/8296326/203583716-e8937d02-f186-4862-b36c-26abc3cdf578.gif)
 
 ```
 if __name__ == '__main__':
