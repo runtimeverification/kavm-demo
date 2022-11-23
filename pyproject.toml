@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "kavm-demo"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "kavm_demo"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pytest = "^7.2.0"
+hypothesis = "^6.58.0"
+py-algorand-sdk = "^1.20.1"
+pyteal = "^0.20.1"
+kavm = { path = "../avm-semantics/kavm/dist/kavm-0.1.0.tar.gz"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+interact = 'kavm_demo.__main__:interact'
+prop-test = 'kavm_demo.__main__:run_prop_test'
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+
+[tool.poetry.group.dev.dependencies]
+autoflake = "*"
+black = "*"
+flake8 = "*"
+flake8-bugbear = "*"
+flake8-comprehensions = "*"
+isort = "*"
+mypy = "*"
+pep8-naming = "*"
+
+[tool.autoflake]
+recursive = true
+expand-star-imports = true
+remove-all-unused-imports = true
+ignore-init-module-imports = true
+remove-duplicate-keys = true
+remove-unused-variables = true
