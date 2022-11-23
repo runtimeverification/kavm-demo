@@ -28,22 +28,21 @@ In the screenshot above, we see kup reporting that the `kavm` package is availab
 
 ![2](https://user-images.githubusercontent.com/8296326/202645178-324a8bd2-cd8e-4eee-920d-6b4c65dd1241.png)
 
-The installation process may take some time, since `kavm` will be built from source, together with its dependencies (can we provide a cached build?).
+The installation process may take some time, since `kavm` will be built from source, together with its dependencies.
 
-### Test a PyTeal smart contract with KAVM
+### KAVM demo: catching rounding errors
 
-In this tutorial, we'll look at how KAVM can be used to test a simple Algorand smart contract implemented in PyTeal. KAVM is compatible with `py-algorand-sdk`, which makes it possible to not only use the full power of Python's testing libraries such as `pyetst` and `hypothesis`, but to fully **reuse** Python scripts that deploy PyTeal smart contracts for testing with KAVM.
+Rounding errors is smart contract can lead to severe security vulnerabilities and loss of funds. Rounding errors analysis is an important step are always perform in every smart contract audit that we do at Runtime Verification.
 
-#### The Calculator contract
+In this tutorial, we will look at an Algorand smart contract implemented in PyTeal, which implements a Vault for K Coins. Users can interact with the Vault to *mint* K Coins in exchange for their Algos and to *burn* their K Coins to redeem the Algos. We will use KAVM in conjunction with [Hypothesis](https://hypothesis.readthedocs.io/en/latest/index.html), a Python property-based testing framework, to check that the rounding errors in the contract are *bounded*, i.e. always remain negligible. Checking that property allows to ensure that neither can users make money out of thin air, nor will they loose any Alogs while interacting with the Vault .
 
-We will use the [Calculator](https://github.com/runtimeverification/avm-semantics/blob/pyteal-calculator/kavm/src/tests/algod_integration/contracts/calculator/contract.py) contract as the example of this tutorial. This very simple contract example is provided by Algorand [devrel](https://github.com/algorand-devrel/beaker-calculator/tree/main/calculator-pyteal) and suites perfectly for tutorials like this one, since it is concise, but still has a lot in common with real Algorand smart contracts.
+#### The K Coin Vault contract
 
-The contract uses the PyTeal `Router` abstraction to define the [ABI](https://pyteal.readthedocs.io/en/stable/abi.html) of the contract, and plug the methods implementations into it. The router abstraction makes the implementation in PyTeal very concise:
+The contract uses the PyTeal `Router` abstraction to define the [ABI](https://pyteal.readthedocs.io/en/stable/abi.html) of the contract, and plug the methods implementations into it. Let us have a look at the interface of the contract, with the implementation of the methods stripped down (full code available [here](https://github.com/runtimeverification/kavm-demo)):
 
 ```python
 router = Router(
-    # Name of the contract
-    name="calculator",
+    name="K Coin Vault",
     bare_calls=BareCallActions(
         no_op=OnCompleteAction.create_only(Approve()),
         update_application=OnCompleteAction.never(),
@@ -52,117 +51,99 @@ router = Router(
     ),
 )
 
-@router.method
-def add(a: abi.Uint64, b: abi.Uint64, *, output: abi.Uint64) -> Expr:
-    """sum a and b, return the result"""
-    return output.set(a.get() + b.get())
 
 @router.method
-def sub(a: abi.Uint64, b: abi.Uint64, *, output: abi.Uint64) -> Expr:
-    """subtract b from a, return the result"""
-    return output.set(a.get() - b.get())
+def init_asset(*, output: abi.Uint64) -> Expr:
+    """
+    Create the K Coin asset
+    Can only be executed by the contract's creator
+    Returns: created asset id
+    """
+    pass
 
 @router.method
-def mul(a: abi.Uint64, b: abi.Uint64, *, output: abi.Uint64) -> Expr:
-    """multiply a and b, return the result"""
-    return output.set(a.get() * b.get())
+def mint(payment: abi.PaymentTransaction, *, output: abi.Uint64) -> Expr:
+    """
+    Mint K Coins, issuing an inner asset transfer transaction to sender if successful
+    Args:
+        payment: A payment transaction containing the amount of Algos the user wishes to mint with.
+            The receiver of this transaction must be this app's escrow account.
+    Returns: minted amount of K Coins that the user gets
+    """
+    pass
+
 
 @router.method
-def div(a: abi.Uint64, b: abi.Uint64, *, output: abi.Uint64) -> Expr:
-    """divide a by b, return the result"""
-    return output.set(a.get() / b.get())
+def burn(asset_transfer: abi.AssetTransferTransaction, *, output: abi.Uint64) -> Expr:
+    """
+    Burn K Coins, issuing an inner payment transaction to sender if successful
+    Args:
+        asset_transfer: An asset transfer transaction containing the amount of K Coins (in microKs) the user wishes to burn.
+            The receiver of this transaction must be this app's escrow account.
+    Returns: amount of microalgos the users gets
+    """
+    pass
 ```
 
-The contract has four ABI methods (Python functions marked with `@router.method` decorator) for four binary arithmetic operations: addition, subtraction, multiplication and division. Besides the ABI methods, the contract accepts only one [*bare call*](https://pyteal.readthedocs.io/en/stable/abi.html#creating-an-arc-4-program), which facilitate application deployment (creation of the application in the Algorand blockchain). All other bare calls, such as application code update, deletion and clear state are rejected.
-
-#### Testing the contract with KAVM
+The contract has three ABI methods (Python functions marked with the `@router.method` decorator) for the two user-actions (mint and burn) and the single admin-action (init_asset). Besides the ABI methods, the contract accepts only one [*bare call*](https://pyteal.readthedocs.io/en/stable/abi.html#creating-an-arc-4-program), which facilitate application deployment (creation of the application in the Algorand blockchain). All other bare calls, such as application code update, deletion and clear state are rejected.
 
 To test PyTeal contracts, the developers have to *deploy* them, since the source code above cannot be executed directly. The usual deployment workflow is to compile the contract's source code to TEAL, the executable language of the Algorand blockchain, and submit an application call transaction to an Algorand node that will create the contract. Interaction with the created contract is then done by submitting more application call transactions.
 
-KAVM works a little differently. KAVM is not an implementation of the Algorand node, but rather a simulation and formal verification tool for Algorand smart contracts. Therefore, KAVM runs locally on the developers machine, almost like the Algorand [Sandbox](https://github.com/algorand/sandbox). However, in contracts to the Sandbox, there is no HTTP communication involved when interacting with KAVM, therefore the gap between the Python testing/deployment script and the execution engine is much narrower.
+KAVM works a little differently. KAVM is not an implementation of the Algorand node, but rather a simulation and formal verification tool for Algorand smart contracts. Therefore, KAVM runs locally on the developer's machine, almost like the Algorand [Sandbox](https://github.com/algorand/sandbox). However, in contracts to the Sandbox, there is no HTTP communication involved when interacting with KAVM, therefore the gap between the Python testing/deployment script and the execution engine is much narrower.
 
 With all that being said, we do not want the developers to think too much about the implementation details! Thus, we have designed KAVM to integrate well with `py-algorand-sdk`, making it possible to interact with KAVM almost as if it were, in fact, and Algorand node.
 
-Enough talking! Let's get our hand dirt and simulate the calculator contract deployment with KAVM!
+Enough talking! Let's get our hand dirt and simulate the K Coin Vault contract with KAVM!
 
-#### Deploying a smart contact with KAVM and `py-algorand-sdk`
+#### Testing the K Coin Vault with KAVM
 
-Smart contracts must be deployed by *somebody* --- an existing Algorand account that will submit he application call to create the contract. We generate a fresh account that we will initialize the KAVM with. By default, KAVM will treat the account as a faucet and give it a big supply of Algos:
+We have packaged the contract's source code and testing scripts into a tiny Python package. The package sets-up the Python environment with the `poetry` tool and provides testing code. In case you do not have `poetry` installed, you can run the official [installer script](https://python-poetry.org/docs/#installation) like this:
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+Once `poetry` is set-up, close the `kavm-demo` repository and change into it:
+
+```bash
+git clone https://github.com/runtimeverification/kavm-demo.git
+cd kavm-demo
+```
+
+Inside the directory, there's a bunch of files that define the project structure, and as well the `kcoin_vault` directory, which contains the Vault implementation in PyTeal, along with the `clinet.py` to interact with the contract and the test files:
+
+```bash
+$ ls kcoin_vault
+client.py    __init__.py __main__.py  test_mint_burn.py conftest.py  kcoin_vault_pyteal.py
+```
+
+The `kcoin_vault_pyteal.py` contains the full implementation of the Vault contract in PyTeal. We will look at it later (it is not long at all though). Let's instead first look at `test_mint_burn.py`, which defines a property test of minting and burning in sequence:
 
 ```python
-    creator_private_key, creator_address = account.generate_account()
-    client = KAVMClient(str(creator_address))
+@settings(deadline=TEST_CASE_DEADLINE, max_examples=N_TESTS, phases=[Phase.generate])
+@given(
+    microalgos=st.integers(min_value=MIN_ARG_VALUE, max_value=MAX_ARG_VALUE),
+)
+def test_mint_burn(initial_state_fixture, microalgos: int) -> None:
+    client, user_addr, user_private_key = initial_state_fixture
+    minted = client.call_mint(user_addr, user_private_key, microalgos)
+    got_back = client.call_burn(user_addr, user_private_key, minted)
+    assert got_back == microalgos
 ```
 
-Then, we need to compile the PyTeal source code of the contract into the binary representation we could submit as part of a transaction. Assuming that the source code is located in the `contract.py` file (see the end of this tutorial to links for complete examples), we can execute the command:
+The test scenario is simple:
+* The contract is initialized in the `initial_state_fixture`, defined in `conftest.py`. The initialization happens only once, and every test case that Hypothesis generates share the same instance.
+* We call the `'mint'` method of the contract supplying the *given* amount of microalgos which will be between `MIN_ARG_VALUE` and `MAX_ARG_VALUE`
+* Upon successful minting, we straight away make a call to the `'burn'` method with the amount we have minted
+* We expect that the redeemed amount is going to be the same that the one we had in hand initially, however...
+
+Let's see what KAVM and Hypothesis think about it:
 
 ```
-$ python contract.py
+$ poetry run prop-test kcoin_vault/test_mint_burn.py
 ```
 
-which should create the approval and clear state TEAL programs. We can verify that these programs are created:
-
-```
-$ ls | grep teal
-approval.teal
-clear.teal
-```
-
-Getting back to our Python deployment script, let's compile the TEAL sources into the binary code:
-
-```python
-    # Read in approval and clear TEAL programs
-    with open("approval.teal") as f:
-        approval_source = f.read()
-    with open("clear.teal") as f:
-        clear_source = f.read()
-    # Compile approval and clear TEAL programs
-    approval_program = compile_program(client, approval_source)
-    clear_program = compile_program(client, clear_source)
-```
-
-Now we need to bundle the compiled programs into a transaction that will deploy the contract, sign the transaction and get its unique identifier:
-
-```python
-    # create unsigned transaction
-    txn = future.transaction.ApplicationCreateTxn(
-        sender=creator_address,
-        sp=client.suggested_params(),
-        on_complete=future.transaction.OnComplete.NoOpOC.real,
-        approval_program=approval_program,
-        clear_program=clear_program,
-        global_schema=None,
-        local_schema=None,
-    )
-    # sign transaction
-    signed_txn = txn.sign(creator_private_key)
-    tx_id = signed_txn.transaction.get_txid()
-```
-
-The important arguments of the `ApplicationCreateTxn` initializer are `sender`, which we set to the creator's address, and the `approval_program` and `clear_state_program`, which are the binary code of the contract.
-
-Finally, we need to submit the transaction and make sure that KAVM has verified and confirmed it: 
-
-```
-    # send transaction
-    client.send_transactions([signed_txn])
-
-    # await confirmation
-    confirmed_txn = future.transaction.wait_for_confirmation(client, tx_id, 4)
-    print("TXID: ", tx_id)
-    print("Result confirmed in round: {}".format(confirmed_txn["confirmed-round"]))
-
-    # display results
-    transaction_response = client.pending_transaction_info(tx_id)
-    app_id = transaction_response["application-index"]
-    print("Created new app with app-id ", app_id)
-```
-
-That's it! Now we can jump to the interesting part: we will simulate the calls to smart contract and use [Hypothesis](https://hypothesis.readthedocs.io/en/latest/index.html), the Python property testing framework to find out which calls will cause the contract to reject our calls.
-
-#### Interacting with the contract
-
-First off, we will turn our calculator smart contract into a command-line executable, so we can easily call any of it's methods from our shell:
+<<<<<<<<<<<<<< GIF >>>>>>>>>>>>>>
 
 ```
 if __name__ == '__main__':
