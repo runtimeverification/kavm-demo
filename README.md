@@ -12,6 +12,20 @@ Read on if you'd like to learn more!
 
 ### How to install KAVM
 
+#### TEMPORARY SECTION: install KAVM from source
+
+Until `kup` and `avm-sematnics` are set-up properly to handle binary caching and `KAVM_DEFINITION_DIR`, we suggest installing KAVM from source. Happy path:
+
+```
+git clone https://github.com/runtimeverification/kavm-demo.git # clone this repo
+cd kavm-demo
+git clone https://github.com/runtimeverification/avm-semantics.git # clone avm-semantics
+cd avm-semantics
+git checkout kcoin-vault
+make plugin-deps && make build
+cd ../
+```
+
 #### Install kup tool
 
 The easiest way to install KAVM is provided by the kup tool. To install kup, run the following in your terminal:
@@ -118,6 +132,7 @@ Once `poetry` is set-up, close the `kavm-demo` repository and change into it:
 ```bash
 git clone https://github.com/runtimeverification/kavm-demo.git
 cd kavm-demo
+poetry install
 ```
 
 Inside the directory, there's a bunch of files that define the project structure, and as well the `kcoin_vault` directory, which contains the Vault implementation in PyTeal, along with the `clinet.py` to interact with the contract and the test files:
@@ -186,7 +201,7 @@ def test_mint_burn(initial_state_fixture, microalgos: int) -> None:
 Running the modified property test, we can see that Hypothesis cannot find a violating example after 25 attempts:
 
 ```python
-$ prop-test kcoin_vault/test_mint_burn.py
+$ poetry run prop-test kcoin_vault/test_mint_burn.py
 ================================== test session starts ==================================
 platform linux -- Python 3.10.6, pytest-7.2.0, pluggy-1.0.0
 rootdir: /home/geo2a/Workspace/RV/kavm-demo
