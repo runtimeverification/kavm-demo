@@ -17,5 +17,5 @@ def test_mint_burn(initial_state_fixture, microalgos: int) -> None:
     client, user_addr, user_private_key = initial_state_fixture
     minted = client.call_mint(user_addr, user_private_key, microalgos)
     got_back = client.call_burn(user_addr, user_private_key, minted)
-    assert got_back == microalgos
-    # assert abs(got_back - microalgos) <= 1
+    # assert got_back == microalgos
+    assert abs(got_back - microalgos) <= 1
