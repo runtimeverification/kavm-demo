@@ -207,7 +207,7 @@ def test_mint_burn(initial_state_fixture, microalgos: int) -> None:
 Running the modified property test, we can see that Hypothesis cannot find a violating example after 25 attempts:
 
 ```python
-$ poetry run prop-test kcoin_vault/test_mint_burn.py
+$ poetry run prop-test kcoin_vault/test_mint_burn_refined.py
 ================================== test session starts ==================================
 platform linux -- Python 3.10.6, pytest-7.2.0, pluggy-1.0.0
 rootdir: /home/geo2a/Workspace/RV/kavm-demo
