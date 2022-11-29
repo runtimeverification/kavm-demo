@@ -392,19 +392,20 @@ version = "0.1.0"
 description = "Python bindings and command-line interface for KAVM"
 category = "main"
 optional = false
-python-versions = ">=3.10,<4.0"
+python-versions = "^3.10"
+develop = false
 
 [package.dependencies]
 py-algorand-sdk = "1.20.1"
-pycobertura = ">=3.0.0,<4.0.0"
-pyk = {git = "https://github.com/runtimeverification/pyk.git", rev = "v0.1.66"}
+pycobertura = "^3.0.0"
+pyk = {git = "https://github.com/runtimeverification/pyk.git", tag = "v0.1.73"}
 pyteal = "0.20.1"
 tabulate = "0.8.10"
 types-tabulate = "0.8.10"
 
 [package.source]
-type = "file"
-url = "../avm-semantics/kavm/dist/kavm-0.1.0.tar.gz"
+type = "directory"
+url = "avm-semantics/kavm"
 
 [[package]]
 name = "lxml"
@@ -595,7 +596,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyk"
-version = "0.1.66"
+version = "0.1.73"
 description = ""
 category = "main"
 optional = false
@@ -614,8 +615,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.66"
-resolved_reference = "3f2437d5601a09d5d38dafc10a355c74e60c2d6b"
+reference = "v0.1.73"
+resolved_reference = "dacc95cfc8e61b4e3894d6f458495b85edcf66ec"
 
 [[package]]
 name = "pynacl"
@@ -849,7 +850,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "e7cd7980dd993e02ec8761919a953de28db997be0c4fe64ff3a96cccfb90e5e2"
+content-hash = "71168cfcbe5548af1a6fbc197ad396491e670459edc32f2607c7ae7d46afbd44"
 
 [metadata.files]
 aniso8601 = [
@@ -1048,9 +1049,7 @@ jinja2 = [
     {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
     {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
 ]
-kavm = [
-    {file = "kavm-0.1.0.tar.gz", hash = "sha256:cb1b4ca51b7a27c37dd22979c7c84f5577dbb864566a43d49fab119e7d4c1b77"},
-]
+kavm = []
 lxml = [
     {file = "lxml-4.9.1-cp27-cp27m-macosx_10_15_x86_64.whl", hash = "sha256:98cafc618614d72b02185ac583c6f7796202062c41d2eeecdf07820bad3295ed"},
     {file = "lxml-4.9.1-cp27-cp27m-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:c62e8dd9754b7debda0c5ba59d34509c4688f853588d75b53c3791983faa96fc"},

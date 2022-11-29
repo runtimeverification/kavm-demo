@@ -12,20 +12,6 @@ Read on if you'd like to learn more!
 
 ### How to install KAVM
 
-#### TEMPORARY SECTION: install KAVM from source
-
-Until `kup` and `avm-sematnics` are set-up properly to handle binary caching and `KAVM_DEFINITION_DIR`, we suggest installing KAVM from source. Happy path:
-
-```
-git clone https://github.com/runtimeverification/kavm-demo.git # clone this repo
-cd kavm-demo
-git clone https://github.com/runtimeverification/avm-semantics.git # clone avm-semantics
-cd avm-semantics
-git checkout kcoin-vault
-make plugin-deps && make build
-cd ../
-```
-
 #### Install kup tool
 
 The easiest way to install KAVM is provided by the kup tool. To install kup, run the following in your terminal:
@@ -53,6 +39,26 @@ In the screenshot above, we see kup reporting that the `kavm` package is availab
 ![2](https://user-images.githubusercontent.com/8296326/202645178-324a8bd2-cd8e-4eee-920d-6b4c65dd1241.png)
 
 The installation process may take some time, since `kavm` will be built from source, together with its dependencies.
+
+#### TFALLBACK SECTION: install the K Framework and KAVM from source
+
+Until `kup` and `avm-sematnics` are set-up properly to handle binary caching and `KAVM_DEFINITION_DIR`, we suggest installing KAVM from source. We provide the `build-kavm-from-source.sh` that clones `avm-semantics` repository and builds KAVM:
+
+```
+$ git clone https://github.com/runtimeverification/kavm-demo.git
+$ cd kavm-demo
+$ chmod +x build-kavm-from-source.sh
+$ ./build-kavm-from-source.sh
+```
+
+Once the build process compeletes, you will need certain environment variables set in your shell, which we provide in `kavm-env-vars.sh`:
+You will need to set the `KAVM_DEFINITION_DIR` environment variable in your shell:
+
+```
+$ . kavm-env-vars.sh
+```
+
+You should now be all-set to continue with the demo!
 
 ### KAVM demo: catching rounding errors
 
