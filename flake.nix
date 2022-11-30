@@ -2,8 +2,7 @@
   description = "Python shell flake";
 
   inputs = {
-    avm-semantics.url = "/home/geo2a/Workspace/RV/avm-semantics";
-    # avm-semantics.url = "github:runtimeverification/avm-semantics";
+    avm-semantics.url = "github:runtimeverification/avm-semantics/flake-refactoring";
     nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     poetry2nix.url = "github:nix-community/poetry2nix";

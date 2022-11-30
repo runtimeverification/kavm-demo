@@ -56,14 +56,18 @@
         "rv-utils": "rv-utils_2"
       },
       "locked": {
-        "lastModified": 1669800280,
-        "narHash": "sha256-rEkDQ1CY0J3bnp04pt7/JCooG5lqo3ldpAInaipYPHQ=",
-        "type": "git",
-        "url": "file:///home/geo2a/Workspace/RV/avm-semantics"
+        "lastModified": 1669833019,
+        "narHash": "sha256-s8bflt7m3L6DLXqyF1uAQfeT4cvxQ9YArS8EGMtpbfU=",
+        "owner": "runtimeverification",
+        "repo": "avm-semantics",
+        "rev": "56e6dc11b24fc7a7589455e436dd4b716c5d78e4",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "file:///home/geo2a/Workspace/RV/avm-semantics"
+        "owner": "runtimeverification",
+        "ref": "flake-refactoring",
+        "repo": "avm-semantics",
+        "type": "github"
       }
     },
     "blockchain-k-plugin": {
