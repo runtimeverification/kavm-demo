@@ -12,7 +12,6 @@ pytest = "^7.2.0"
 hypothesis = "^6.58.0"
 py-algorand-sdk = "^1.20.1"
 pyteal = "^0.20.1"
-# kavm = { path = "./avm-semantics/kavm", develop = false }
 
 
 [build-system]

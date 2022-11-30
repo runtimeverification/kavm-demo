@@ -57,10 +57,7 @@
       },
       "locked": {
         "lastModified": 1669800280,
-        "narHash": "sha256-dgfn5S1zAb8Zjdrj7utrABMKrP4e8TwYMRUQyo9uCaM=",
-        "ref": "refs/heads/flake-refactoring",
-        "rev": "531ada1bbfecb7c0e0c79566649429f61d529330",
-        "revCount": 166,
+        "narHash": "sha256-rEkDQ1CY0J3bnp04pt7/JCooG5lqo3ldpAInaipYPHQ=",
         "type": "git",
         "url": "file:///home/geo2a/Workspace/RV/avm-semantics"
       },
@@ -784,16 +781,16 @@
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1669677308,
-        "narHash": "sha256-n788Cx+W6J1CtQofJD/KUY1c2WcJx6GqyJ+++1y9B3k=",
+        "lastModified": 1669542132,
+        "narHash": "sha256-DRlg++NJAwPh8io3ExBJdNW7Djs3plVI5jgYQ+iXAZQ=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f214b8c9455e90b70bafd4ed9a58d448c243e8bb",
+        "rev": "a115bb9bd56831941be3776c8a94005867f316a7",
         "type": "github"
       },
       "original": {
         "id": "nixpkgs",
-        "ref": "nixos-22.05",
+        "ref": "nixos-unstable",
         "type": "indirect"
       }
     },
