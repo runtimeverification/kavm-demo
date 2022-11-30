@@ -42,9 +42,9 @@
         };
         devShell.${system} = pkgs.kavm-demo.env.overrideAttrs(old: {
           shellHook = ''
-          echo "Welcome to KAVM demo!"
-          echo ${avm-semantics.packages.${system}.avm-semantics}
-          export KAVM_DEFINITION_DIR=${(toString avm-semantics.packages.${system}.avm-semantics) + "/lib/kavm/avm-llvm/avm-testing-kompiled"}
+            echo "Welcome to KAVM demo!"
+            export KAVM_DEFINITION_DIR=${(toString avm-semantics.packages.${system}.avm-semantics) + "/lib/kavm/avm-llvm/avm-testing-kompiled"}
+            echo KAVM definition is at $KAVM_DEFINITION_DIR
           '';
           buildInputs = [avm-semantics.packages.${system}.kavm];
           });
