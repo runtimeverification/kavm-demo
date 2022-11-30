@@ -56,16 +56,15 @@
         "rv-utils": "rv-utils_2"
       },
       "locked": {
-        "lastModified": 1669833019,
+        "lastModified": 1669834880,
         "narHash": "sha256-s8bflt7m3L6DLXqyF1uAQfeT4cvxQ9YArS8EGMtpbfU=",
         "owner": "runtimeverification",
         "repo": "avm-semantics",
-        "rev": "56e6dc11b24fc7a7589455e436dd4b716c5d78e4",
+        "rev": "1ef832a676d2c960381a8991d61b570f11efc6ad",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "flake-refactoring",
         "repo": "avm-semantics",
         "type": "github"
       }
