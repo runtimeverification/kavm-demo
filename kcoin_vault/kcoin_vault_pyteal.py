@@ -28,9 +28,9 @@ from pyteal.compiler.optimizer import optimizer
 
 ASSET_TOTAL = 1000000
 ASSET_DECIMALS = 3
-INITIAL_EXCHANGE_RATE = 2
+INITIAL_EXCHANGE_RATE = 2000
 WRONG_SCALING_FACTOR = Int(10)
-SCALING_FACTOR = Int(100)
+SCALING_FACTOR = 1000
 
 # The PyTeal router
 router = Router(
@@ -79,14 +79,22 @@ def init_asset(*, output: abi.Uint64) -> Expr:
 
 @Subroutine(TealType.uint64)
 def algos_to_kcoin(algo_amount: Expr) -> Expr:
-    """Convert microalgos to microKs"""
-    return Div(algo_amount, App.globalGet(Bytes("exchange_rate")))
+    """
+    Convert microalgos to microKs:
+
+    microKs = microAlgos * EXCHANGE_RATE / SCALING_FACTOR
+    """
+    return Div(Mul(algo_amount, App.globalGet(Bytes("exchange_rate"))), Int(SCALING_FACTOR))
 
 
 @Subroutine(TealType.uint64)
 def kcoin_to_algos(asset_amount: Expr) -> Expr:
-    """Convert microKs to microalgos"""
-    return Mul(asset_amount, App.globalGet(Bytes("exchange_rate")))
+    """
+    Convert microKs to microalgos
+
+    microAlgos = microKs * SCALING_FACTOR / EXCHANGE_RATE
+    """
+    return Mul(Div(asset_amount, App.globalGet(Bytes("exchange_rate"))), Int(SCALING_FACTOR))
 
 
 @router.method

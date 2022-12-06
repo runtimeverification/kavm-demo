@@ -2,6 +2,7 @@ import base64
 import logging
 import sys
 from typing import Tuple
+import importlib
 
 import algosdk
 from algosdk.future import transaction
@@ -11,9 +12,6 @@ from algosdk.atomic_transaction_composer import TransactionWithSigner
 from algosdk.atomic_transaction_composer import AccountTransactionSigner
 from algosdk.v2client.algod import AlgodClient
 from kavm.algod import KAVMAtomicTransactionComposer, KAVMClient
-
-from kcoin_vault.kcoin_vault_pyteal import compile_to_teal
-
 
 def compile_teal(client, source_code):
     """Compile TEAL source code to binary for a transaction"""
@@ -34,10 +32,12 @@ class ContractClient:
         algod,
         creator_addr,
         creator_private_key,
+        pyteal_code_module,
     ) -> None:
         self.algod = algod
+        config = importlib.import_module(pyteal_code_module)
 
-        approval_source, clear_source, self.contract_interface = compile_to_teal()
+        approval_source, clear_source, self.contract_interface = config.compile_to_teal()
 
         # Compile approval and clear TEAL programs
         approval_program = compile_teal(algod, approval_source)

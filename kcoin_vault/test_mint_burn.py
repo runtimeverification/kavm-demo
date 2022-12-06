@@ -5,7 +5,7 @@ from hypothesis import strategies as st
 
 MIN_ARG_VALUE = 10
 MAX_ARG_VALUE = 1 * 10**6
-TEST_CASE_DEADLINE = timedelta(seconds=2)
+TEST_CASE_DEADLINE = timedelta(seconds=5)
 N_TESTS = 25
 
 
@@ -17,4 +17,4 @@ def test_mint_burn(initial_state_fixture, microalgos: int) -> None:
     client, user_addr, user_private_key = initial_state_fixture
     minted = client.call_mint(user_addr, user_private_key, microalgos)
     got_back = client.call_burn(user_addr, user_private_key, minted)
-    assert got_back == microalgos
+    assert abs(got_back - microalgos) <= 1
