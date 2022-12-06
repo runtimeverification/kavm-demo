@@ -38,31 +38,9 @@ In the screenshot above, we see kup reporting that the `kavm` package is availab
 
 ![2](https://user-images.githubusercontent.com/8296326/202645178-324a8bd2-cd8e-4eee-920d-6b4c65dd1241.png)
 
-The installation process may take some time, since `kavm` will be built from source, together with its dependencies.
-
-#### TFALLBACK SECTION: install the K Framework and KAVM from source
-
-Until `kup` and `avm-sematnics` are set-up properly to handle binary caching and `KAVM_DEFINITION_DIR`, we suggest installing KAVM from source. We provide the `build-kavm-from-source.sh` that clones `avm-semantics` repository and builds KAVM:
-
-```
-$ git clone https://github.com/runtimeverification/kavm-demo.git
-$ cd kavm-demo
-$ chmod +x build-kavm-from-source.sh
-$ ./build-kavm-from-source.sh
-```
-
-Once the build process compeletes, you will need certain environment variables set in your shell, which we provide in `kavm-env-vars.sh`:
-You will need to set the `KAVM_DEFINITION_DIR` environment variable in your shell:
-
-```
-$ . kavm-env-vars.sh
-```
-
-You should now be all-set to continue with the demo!
-
 ### KAVM demo: catching rounding errors
 
-Rounding errors is smart contract can lead to severe security vulnerabilities and loss of funds. Rounding errors analysis is an important step are always perform in every smart contract audit that we do at Runtime Verification.
+Rounding errors in smart contracts can lead to severe security vulnerabilities and loss of funds. Rounding errors analysis is an important step are always perform in every smart contract audit that we do at Runtime Verification.
 
 In this tutorial, we will look at an Algorand smart contract implemented in PyTeal, which implements a Vault for K Coins. Users can interact with the Vault to *mint* K Coins in exchange for their Algos and to *burn* their K Coins to redeem the Algos. We will use KAVM in conjunction with [Hypothesis](https://hypothesis.readthedocs.io/en/latest/index.html), a Python property-based testing framework, to check that the rounding errors in the contract are *bounded*, i.e. always remain negligible. Checking that property allows to ensure that neither can users make money out of thin air, nor will they loose any Alogs while interacting with the Vault .
 
