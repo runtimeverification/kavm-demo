@@ -3,7 +3,7 @@ from datetime import timedelta
 from hypothesis import Phase, given, settings
 from hypothesis import strategies as st
 
-MIN_ARG_VALUE = 10
+MIN_ARG_VALUE = 1 * 10**2
 MAX_ARG_VALUE = 1 * 10**6
 TEST_CASE_DEADLINE = timedelta(seconds=5)
 N_TESTS = 25

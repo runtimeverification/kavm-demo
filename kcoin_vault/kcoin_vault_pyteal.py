@@ -26,10 +26,9 @@ from pyteal import (
 )
 from pyteal.compiler.optimizer import optimizer
 
-ASSET_TOTAL = 1000000
+ASSET_TOTAL = 1000000000
 ASSET_DECIMALS = 3
 INITIAL_EXCHANGE_RATE = 2000
-WRONG_SCALING_FACTOR = Int(10)
 SCALING_FACTOR = 1000
 
 # The PyTeal router
