@@ -12,9 +12,9 @@ Read on if you'd like to learn more!
 
 ### How to install KAVM
 
-#### Install kup tool
+#### Install `kup` tool
 
-The easiest way to install KAVM is provided by the kup tool. To install kup, run the following in your terminal:
+The easiest way to install KAVM is provided by the `kup` tool. To install `kup`, run the following in your terminal:
 
 ```bash
 bash <(curl https://kframework.org/install)
@@ -42,7 +42,7 @@ In the screenshot above, we see kup reporting that the `kavm` package is availab
 
 Rounding errors in smart contracts can lead to severe security vulnerabilities and loss of funds. Rounding errors analysis is an important step are always perform in every smart contract audit that we do at Runtime Verification.
 
-In this tutorial, we will look at an Algorand smart contract implemented in PyTeal, which implements a Vault for K Coins. Users can interact with the Vault to *mint* K Coins in exchange for their Algos and to *burn* their K Coins to redeem the Algos. We will use KAVM in conjunction with [Hypothesis](https://hypothesis.readthedocs.io/en/latest/index.html), a Python property-based testing framework, to check that the rounding errors in the contract are *bounded*, i.e. always remain negligible. Checking that property allows to ensure that neither can users make money out of thin air, nor will they loose any Alogs while interacting with the Vault .
+In this tutorial, we will look at an Algorand smart contract implemented in PyTeal, which implements a Vault for K Coins. Users can interact with the Vault to *mint* K Coins in exchange for their Algos and to *burn* their K Coins to redeem the Algos. We will use KAVM in conjunction with [Hypothesis](https://hypothesis.readthedocs.io/en/latest/index.html), a Python property-based testing framework, to check that the rounding errors in the contract are *bounded*, i.e. always remain negligible. Checking that property allows to ensure that neither can users make money out of thin air, nor will they loose any Alogs while interacting with the Vault.
 
 #### The K Coin Vault contract
 
@@ -95,13 +95,13 @@ def burn(asset_transfer: abi.AssetTransferTransaction, *, output: abi.Uint64) ->
 
 The contract has three ABI methods (Python functions marked with the `@router.method` decorator) for the two user-actions (mint and burn) and the single admin-action (init_asset). Besides the ABI methods, the contract accepts only one [*bare call*](https://pyteal.readthedocs.io/en/stable/abi.html#creating-an-arc-4-program), which facilitate application deployment (creation of the application in the Algorand blockchain). All other bare calls, such as application code update, deletion and clear state are rejected.
 
-To test PyTeal contracts, the developers have to *deploy* them, since the source code above cannot be executed directly. The usual deployment workflow is to compile the contract's source code to TEAL, the executable language of the Algorand blockchain, and submit an application call transaction to an Algorand node that will create the contract. Interaction with the created contract is then done by submitting more application call transactions.
+<!-- To test PyTeal contracts, the developers have to *deploy* them, since the source code above cannot be executed directly. The usual deployment workflow is to compile the contract's source code to TEAL, the executable language of the Algorand blockchain, and submit an application call transaction to an Algorand node that will create the contract. Interaction with the created contract is then done by submitting more application call transactions. -->
 
-KAVM works a little differently. KAVM is not an implementation of the Algorand node, but rather a simulation and formal verification tool for Algorand smart contracts. Therefore, KAVM runs locally on the developer's machine, almost like the Algorand [Sandbox](https://github.com/algorand/sandbox). However, in contracts to the Sandbox, there is no HTTP communication involved when interacting with KAVM, therefore the gap between the Python testing/deployment script and the execution engine is much narrower.
+<!-- KAVM works a little differently. KAVM is not an implementation of the Algorand node, but rather a simulation and formal verification tool for Algorand smart contracts. Therefore, KAVM runs locally on the developer's machine, almost like the Algorand [Sandbox](https://github.com/algorand/sandbox). However, in contracts to the Sandbox, there is no HTTP communication involved when interacting with KAVM, therefore the gap between the Python testing/deployment script and the execution engine is much narrower. -->
 
-With all that being said, we do not want the developers to think too much about the implementation details! Thus, we have designed KAVM to integrate well with `py-algorand-sdk`, making it possible to interact with KAVM almost as if it were, in fact, and Algorand node.
+<!-- With all that being said, we do not want the developers to think too much about the implementation details! Thus, we have designed KAVM to integrate well with `py-algorand-sdk`, making it possible to interact with KAVM almost as if it were, in fact, and Algorand node. -->
 
-Enough talking! Let's get our hand dirt and simulate the K Coin Vault contract with KAVM!
+Enough talking! Let's get our hand dirty and simulate the K Coin Vault contract with KAVM!
 
 #### Testing the K Coin Vault with KAVM
 
@@ -111,7 +111,7 @@ We have packaged the contract's source code and testing scripts into a tiny Pyth
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-Once `poetry` is set-up, close the `kavm-demo` repository and change into it:
+Once `poetry` is set-up, clone the `kavm-demo` repository and change into it:
 
 ```bash
 git clone https://github.com/runtimeverification/kavm-demo.git
@@ -122,7 +122,7 @@ poetry install
 Inside the directory, there's a bunch of files that define the project structure, and as well the `kcoin_vault` directory, which contains the Vault implementation in PyTeal, along with the `clinet.py` to interact with the contract and the test files:
 
 ```bash
-$ ls kcoin_vault
+ls kcoin_vault
 client.py    __init__.py __main__.py  test_mint_burn.py conftest.py  kcoin_vault_pyteal.py
 ```
 
@@ -149,7 +149,7 @@ The test scenario is simple:
 Let's see what KAVM and Hypothesis think about it:
 
 ```
-$ poetry run prop-test kcoin_vault/test_mint_burn.py
+poetry run prop-test kcoin_vault/test_mint_burn.py
 ```
 
 ![failing-test.gif](https://user-images.githubusercontent.com/8296326/203583716-e8937d02-f186-4862-b36c-26abc3cdf578.gif)
@@ -185,7 +185,7 @@ def test_mint_burn(initial_state_fixture, microalgos: int) -> None:
 Running the modified property test, we can see that Hypothesis cannot find a violating example after 25 attempts:
 
 ```python
-$ poetry run prop-test kcoin_vault/test_mint_burn_refined.py
+poetry run prop-test kcoin_vault/test_mint_burn_refined.py
 ================================== test session starts ==================================
 platform linux -- Python 3.10.6, pytest-7.2.0, pluggy-1.0.0
 rootdir: /home/geo2a/Workspace/RV/kavm-demo

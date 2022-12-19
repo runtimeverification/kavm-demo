@@ -78,7 +78,10 @@ class ContractClient:
             self.app_id, self.contract_interface.get_method_by_name("init_asset"), creator_addr, params, signer
         )
 
-        resp = comp.execute(self.algod, 2, override_tx_ids=['0'])
+        if isinstance(self.algod, KAVMClient):
+            resp = comp.execute(self.algod, 2, override_tx_ids=['0'])
+        else:
+            resp = comp.execute(self.algod, 2)
         self.asset_id = resp.abi_results[0].return_value
 
         # Opt-in to app's asset
@@ -88,7 +91,10 @@ class ContractClient:
                 transaction.AssetOptInTxn(sender=creator_addr, sp=params, index=self.asset_id), signer
             )
         )
-        resp = comp.execute(self.algod, 2, override_tx_ids=['0'])
+        if isinstance(self.algod, KAVMClient):
+            resp = comp.execute(self.algod, 2, override_tx_ids=['0'])
+        else:
+            resp = comp.execute(self.algod, 2)
 
     def call_mint(
         self,
@@ -126,7 +132,11 @@ class ContractClient:
                 )
             ],
         )
-        resp = comp.execute(self.algod, 2, override_tx_ids=['0', '1'])
+
+        if isinstance(self.algod, KAVMClient):
+            resp = comp.execute(self.algod, 2, override_tx_ids=['0', '1'])
+        else:
+            resp = comp.execute(self.algod, 2)
         return resp.abi_results[0].return_value
 
     def call_burn(
@@ -166,5 +176,8 @@ class ContractClient:
                 )
             ],
         )
-        resp = comp.execute(self.algod, 2, override_tx_ids=['0', '1'])
+        if isinstance(self.algod, KAVMClient):
+            resp = comp.execute(self.algod, 2, override_tx_ids=['0', '1'])
+        else:
+            resp = comp.execute(self.algod, 2)
         return resp.abi_results[0].return_value
