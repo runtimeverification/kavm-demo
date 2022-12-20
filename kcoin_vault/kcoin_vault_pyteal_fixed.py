@@ -93,12 +93,14 @@ def kcoin_to_algos(asset_amount: Expr) -> Expr:
 
     microAlgos = microKs * SCALING_FACTOR / EXCHANGE_RATE
     """
-    return Mul(Div(asset_amount, App.globalGet(Bytes("exchange_rate"))), Int(SCALING_FACTOR))
+    return Div(Mul(asset_amount, Int(SCALING_FACTOR)), App.globalGet(Bytes("exchange_rate")))
 
 
 @router.precondition(expr='payment.get().amount() >= Int(10000)')
 @router.precondition(expr='payment.get().amount() <= Int(20000)')
-@router.postcondition(expr=f'output.get() == payment.get().amount() * Int({INITIAL_EXCHANGE_RATE}) / Int({SCALING_FACTOR})')
+@router.postcondition(
+    expr=f'output.get() == payment.get().amount() * Int({INITIAL_EXCHANGE_RATE}) / Int({SCALING_FACTOR})'
+)
 @router.hoare_method
 @router.method
 def mint(payment: abi.PaymentTransaction, *, output: abi.Uint64) -> Expr:
@@ -129,9 +131,12 @@ def mint(payment: abi.PaymentTransaction, *, output: abi.Uint64) -> Expr:
         output.set(amount_to_mint),
     )
 
+
 @router.precondition(expr='asset_transfer.get().amount() >= Int(10000)')
 @router.precondition(expr='asset_transfer.get().amount() <= Int(20000)')
-@router.postcondition(expr=f'output.get() == asset_transfer.get().amount() * Int({SCALING_FACTOR}) / Int({INITIAL_EXCHANGE_RATE})')
+@router.postcondition(
+    expr=f'output.get() == asset_transfer.get().amount() * Int({SCALING_FACTOR}) / Int({INITIAL_EXCHANGE_RATE})'
+)
 @router.hoare_method
 @router.method
 def burn(asset_transfer: abi.AssetTransferTransaction, *, output: abi.Uint64) -> Expr:

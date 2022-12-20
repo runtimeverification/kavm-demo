@@ -21,6 +21,9 @@ def run_demo(args=sys.argv) -> None:
     args = parser.parse_args()
     coloredlogs.install(level=_loglevel(args), fmt=_LOG_FORMAT)
 
+    if not args.debug:
+        logging.getLogger('pyk.ktool.kprove').setLevel(logging.CRITICAL)
+
     if args.command == 'test':
         exec_test(
             pyteal_code_file=args.pyteal_code_file,
@@ -31,6 +34,7 @@ def run_demo(args=sys.argv) -> None:
     elif args.command == 'verify':
         exec_verify(
             pyteal_code_file=args.pyteal_code_file,
+            method=args.method
         )
 
 
@@ -56,6 +60,7 @@ def exec_test(
 
 def exec_verify(
     pyteal_code_file: Path,
+    method: str,
 ) -> None:
     pyteal_code_module_str = str(pyteal_code_file).strip('.py').replace('/', '.')
     sys.setrecursionlimit(15000000)
@@ -67,9 +72,9 @@ def exec_verify(
         app_id=1,
         sdk_app_creator_account_dict=sdk_app_creator_account_dict,
         sdk_app_account_dict=sdk_app_account_dict,
+        method_names = [method]
     )
-    prover.prove('mint')
-    prover.prove('burn')
+    prover.prove(method)
 
 
 def create_argument_parser() -> ArgumentParser:
@@ -130,11 +135,17 @@ def create_argument_parser() -> ArgumentParser:
     )
 
     # verify
-    test_subparser = command_parser.add_parser(
+    verify_subparser = command_parser.add_parser(
         'verify',
         help='Verify the pre and post conditions of contract methods',
         parents=[shared_args],
         allow_abbrev=False,
+    )
+    verify_subparser.add_argument(
+        '--method',
+        dest='method',
+        type=str,
+        help='Method of the contract to verify',
     )
 
     return parser
@@ -144,10 +155,7 @@ def _loglevel(args: Namespace) -> int:
     if args.debug:
         return logging.DEBUG
 
-    if args.verbose or args.profile:
-        return logging.INFO
-
-    return logging.WARNING
+    return logging.INFO
 
 sdk_app_creator_account_dict = {
     "address": "DJPACABYNRWAEXBYKT4WMGJO5CL7EYRENXCUSG2IOJNO44A4PWFAGLOLIA",
@@ -167,7 +175,7 @@ sdk_app_creator_account_dict = {
                 "global-state-schema": {"nbs": 0, "nui": 2},
                 "global-state": [
                     {"key": "YXNzZXRfaWQ=", "value": {"bytes": "", "type": 2, "uint": 1}},
-                    {"key": "ZXhjaGFuZ2VfcmF0ZQ==", "value": {"bytes": "", "type": 2, "uint": 2}},
+                    {"key": "ZXhjaGFuZ2VfcmF0ZQ==", "value": {"bytes": "", "type": 2, "uint": 2000}},
                 ],
             },
         }
