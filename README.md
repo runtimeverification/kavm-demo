@@ -39,7 +39,7 @@ Once `kup` is installed, we can proceed to installing `kavm` itself.
 Install KAVM from the specified Git revision (no binary cache unfortunately):
 
 ```
-kup install kevm --version integrate-autoprover-2
+kup install kavm --version integrate-autoprover-2
 ```
 
 <!-- In the screenshot above, we see kup reporting that the `kavm` package is available for installation. Proceed by typing `kup install kavm` to install it: -->
