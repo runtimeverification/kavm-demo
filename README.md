@@ -242,6 +242,12 @@ KAVM also can simulate Algorand smart contracts using K's concrete execution bac
 kavm run .kavm/K-Coin-Vault-burn_simulation.json --teal-sources-dir .kavm/ --output stderr-json
 ```
 
+#### Fixing the code and verifying
+
+```
+poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal_fixed.py --method burn
+```
+
 ### What's next
 
 #### Integration with Algorand Beaker
