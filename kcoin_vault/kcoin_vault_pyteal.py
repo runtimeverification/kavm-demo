@@ -33,7 +33,7 @@ SCALING_FACTOR = 1000
 
 # The PyTeal router
 router = Router(
-    name="K Coin Vault",
+    name="K-Coin-Vault",
     bare_calls=BareCallActions(
         no_op=OnCompleteAction.create_only(Approve()),
         update_application=OnCompleteAction.never(),
@@ -96,6 +96,10 @@ def kcoin_to_algos(asset_amount: Expr) -> Expr:
     return Mul(Div(asset_amount, App.globalGet(Bytes("exchange_rate"))), Int(SCALING_FACTOR))
 
 
+@router.precondition(expr='payment.get().amount() >= Int(10000)')
+@router.precondition(expr='payment.get().amount() <= Int(20000)')
+@router.postcondition(expr=f'output.get() == payment.get().amount() / Int({INITIAL_EXCHANGE_RATE})')
+@router.hoare_method
 @router.method
 def mint(payment: abi.PaymentTransaction, *, output: abi.Uint64) -> Expr:
     """
@@ -125,7 +129,10 @@ def mint(payment: abi.PaymentTransaction, *, output: abi.Uint64) -> Expr:
         output.set(amount_to_mint),
     )
 
-
+@router.precondition(expr='asset_transfer.get().amount() >= Int(10000)')
+@router.precondition(expr='asset_transfer.get().amount() <= Int(20000)')
+@router.postcondition(expr=f'output.get() == asset_transfer.get().amount() * Int({INITIAL_EXCHANGE_RATE})')
+@router.hoare_method
 @router.method
 def burn(asset_transfer: abi.AssetTransferTransaction, *, output: abi.Uint64) -> Expr:
     """

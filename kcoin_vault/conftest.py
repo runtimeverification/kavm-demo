@@ -1,14 +1,13 @@
 import logging
+from typing import Any, Dict, Tuple
+
 import pytest
-from typing import Tuple, Any, Dict
 from algosdk.account import generate_account
 from algosdk.v2client.algod import AlgodClient
-
 from kavm.algod import KAVMClient
 
 from kcoin_vault.client import ContractClient
 from kcoin_vault.sandbox import get_accounts
-
 
 
 def pytest_addoption(parser):

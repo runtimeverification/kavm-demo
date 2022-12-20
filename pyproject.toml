@@ -12,13 +12,37 @@ pytest = "^7.2.0"
 hypothesis = "^6.58.0"
 py-algorand-sdk = "^1.20.1"
 pyteal = "^0.20.1"
-kavm = { git = "https://github.com/runtimeverification/avm-semantics.git", subdirectory = "kavm", branch = "faster-json-dump"  }
+coloredlogs = "^15.0.1"
+kavm = { git = "https://github.com/runtimeverification/avm-semantics.git", subdirectory = "kavm", branch = "integrate-autoprover"  }
 
+[tool.poetry.group.dev.dependencies]
+autoflake = "*"
+black = "*"
+flake8 = "*"
+flake8-bugbear = "*"
+flake8-comprehensions = "*"
+isort = "*"
+pep8-naming = "*"
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+
+[tool.autoflake]
+recursive = true
+expand-star-imports = true
+remove-all-unused-imports = true
+ignore-init-module-imports = true
+remove-duplicate-keys = true
+remove-unused-variables = true
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-interact = 'kcoin_vault.__main__:interact'
-prop-test = 'kcoin_vault.__main__:run_prop_test'
+kavm-demo = 'kcoin_vault.__main__:run_demo'

@@ -1,17 +1,11 @@
 import base64
-import logging
-import sys
-from typing import Tuple
 import importlib
 
 import algosdk
+from algosdk.atomic_transaction_composer import AccountTransactionSigner, TransactionWithSigner
 from algosdk.future import transaction
-from algosdk.abi import Contract
-from algosdk.account import generate_account
-from algosdk.atomic_transaction_composer import TransactionWithSigner
-from algosdk.atomic_transaction_composer import AccountTransactionSigner
-from algosdk.v2client.algod import AlgodClient
 from kavm.algod import KAVMAtomicTransactionComposer, KAVMClient
+
 
 def compile_teal(client, source_code):
     """Compile TEAL source code to binary for a transaction"""
