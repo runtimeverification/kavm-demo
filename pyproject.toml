@@ -13,7 +13,8 @@ hypothesis = "^6.58.0"
 py-algorand-sdk = "^1.20.1"
 pyteal = "^0.20.1"
 coloredlogs = "^15.0.1"
-kavm = { git = "https://github.com/runtimeverification/avm-semantics.git", subdirectory = "kavm", branch = "integrate-autoprover"  }
+kavm = { git = "https://github.com/runtimeverification/avm-semantics.git", subdirectory = "kavm", branch = "integrate-autoprover-2"  }
+# kavm = { path = "../avm-semantics/kavm/", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
