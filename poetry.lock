@@ -651,7 +651,7 @@ category = "main"
 optional = false
 python-versions = "^3.10"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 py-algorand-sdk = "1.20.1"
@@ -661,9 +661,11 @@ tabulate = "0.8.10"
 types-tabulate = "0.8.10"
 
 [package.source]
-type = "directory"
-url = "../avm-semantics/kavm"
-
+type = "git"
+url = "https://github.com/runtimeverification/avm-semantics.git"
+reference = "integrate-autoprover-2"
+resolved_reference = "b14a6db56085ec1d69636fa499c561e19fc124f4"
+subdirectory = "kavm"
 [[package]]
 name = "markupsafe"
 version = "2.1.1"
@@ -1497,4 +1499,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ec58901086b23f821647c2af834f47eacf146f5a56be355ad318b5a5eeeeaece"
+content-hash = "56c1a4b0c61fedb2155e061a53a8f6217704b9e3de59e86b9baf782efd534dad"
