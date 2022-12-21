@@ -23,7 +23,8 @@ kup list
 
 The result should look similar to the following screenshot:
 
-![1](https://user-images.githubusercontent.com/8296326/202644795-897cf3d7-0a7c-4654-8998-4fc838ec632e.png)
+![1](https://user-images.githubusercontent.com/8296326/208937153-fa1f940a-d3ee-4588-905e-58b4d972fbec.png)
+
 
 Naturally, KAVM uses the K Framework under the hood! Therefore we need to install the `k` package with `kup`:
 
@@ -39,7 +40,8 @@ kup install kavm
 
 Finally, executing `kup list` should report that `kup`, `k` and `kavm` are installed:
 
-![2](https://user-images.githubusercontent.com/8296326/202645178-324a8bd2-cd8e-4eee-920d-6b4c65dd1241.png)
+![2](https://user-images.githubusercontent.com/8296326/208937184-36e8861f-dfa0-4709-b28d-1dcf185f5925.png)
+
 
 ### KAVM demo: catching rounding errors
 
