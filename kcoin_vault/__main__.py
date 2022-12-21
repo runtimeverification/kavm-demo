@@ -44,6 +44,9 @@ def exec_test(
     verbose: bool = False,
     backend: str = 'kavm',
 ) -> None:
+    if not verbose:
+        logging.getLogger('kavm.kavm').setLevel(logging.CRITICAL)
+        logging.getLogger('kavm.algod').setLevel(logging.CRITICAL)
     pyteal_code_module_str = str(pyteal_code_file).strip('.py').replace('/', '.')
     pytest.main(
         [
@@ -65,7 +68,6 @@ def exec_simulate(pyteal_code_file: Path, methods: str, backend: str = 'kavm', v
         logging.getLogger('kavm.algod').setLevel(logging.CRITICAL)
     pyteal_code_module_str = str(pyteal_code_file).strip('.py').replace('/', '.')
     test_code_file = 'kcoin_vault/test_method_sequence.py'
-    # methods = 'mint(10000) burn(10000)'
     sys.exit(
         pytest.main(
             args=[
@@ -90,6 +92,9 @@ def exec_verify(
 
     _LOGGER.info(f'Verifying specifications in module {pyteal_code_module_str}')
 
+    # Note that KAVM can use account data that is retrived from Algorand Node REST API.
+    # We define the account data for the KCoin Vault contract and its creator at the
+    # bottom of this file for portability.
     prover = AutoProver(
         pyteal_module_name=pyteal_code_module_str,
         app_id=1,
@@ -122,6 +127,7 @@ def create_argument_parser() -> ArgumentParser:
         '--pyteal-code-file',
         dest='pyteal_code_file',
         type=file_path,
+        required=True,
         help='Path to the PyTeal source code file to test',
     )
 
@@ -130,7 +136,7 @@ def create_argument_parser() -> ArgumentParser:
     # test
     test_subparser = command_parser.add_parser(
         'test',
-        help='Run a property test',
+        help='Run a concrete property test',
         parents=[shared_args],
         allow_abbrev=False,
     )
@@ -139,7 +145,7 @@ def create_argument_parser() -> ArgumentParser:
         dest='backend',
         type=str,
         choices=['kavm', 'sandbox'],
-        help='Interpreter to execute the tests with',
+        help='Interpreter to execute the tests with, KAVM or the Algorand Sandbox',
         default='kavm',
     )
     test_subparser.add_argument(
@@ -152,7 +158,7 @@ def create_argument_parser() -> ArgumentParser:
     # verify
     verify_subparser = command_parser.add_parser(
         'verify',
-        help='Verify the pre and post conditions of contract methods',
+        help='Verify the pre and post conditions of contract methods by symbolic execution',
         parents=[shared_args],
         allow_abbrev=False,
     )
@@ -174,7 +180,8 @@ def create_argument_parser() -> ArgumentParser:
         '--methods',
         dest='methods',
         type=str,
-        help='Method sequence to call',
+        required=True,
+        help='Method sequence to call, for example \'mint(10000) burn(20000)\'',
     )
     simulate_subparser.add_argument(
         '--backend',
@@ -195,6 +202,7 @@ def _loglevel(args: Namespace) -> int:
     return logging.INFO
 
 
+# Concrete data to bootstrap verification. Can also be retrieved from an Algorand Node via REST API
 sdk_app_creator_account_dict = {
     "address": "DJPACABYNRWAEXBYKT4WMGJO5CL7EYRENXCUSG2IOJNO44A4PWFAGLOLIA",
     "amount": 999999000000,

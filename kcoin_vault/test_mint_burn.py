@@ -1,3 +1,18 @@
+'''
+This test fiule module should be run with KAVM, like this:
+```
+poetry run kavm-demo test --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py \
+                          --test-code-file kcoin_vault/test_mint_burn.py
+```
+
+The PyTeal file above has a fault, hence Hypothesis finds the error. Test the fixed file:
+
+```
+poetry run kavm-demo test --pyteal-code-file kcoin_vault/kcoin_vault_pyteal_fixed.py \
+                          --test-code-file kcoin_vault/test_mint_burn.py
+```
+'''
+
 from datetime import timedelta
 
 from hypothesis import Phase, given, settings

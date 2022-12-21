@@ -300,4 +300,4 @@ So far KAVM's `AutoProver` only allows placing pre and postcondition on methods'
 
 KAVM is developed by [Runtime Verification](https://runtimeverification.com/) with support from the Algorand Foundation.
 
-At Runtime Verification, we are committed to smart contract security and we would like to bring formal verification easier to adopt for every developer out there.
+At Runtime Verification, we are committed to smart contract security and we would like to make formal verification accessible to every developer!
