@@ -23,6 +23,7 @@ def run_demo(args=sys.argv) -> None:
 
     if not args.debug:
         logging.getLogger('pyk.ktool.kprove').setLevel(logging.CRITICAL)
+        logging.getLogger('pyk.ktool.krun').setLevel(logging.CRITICAL)
 
     if args.command == 'test':
         exec_test(
@@ -32,10 +33,9 @@ def run_demo(args=sys.argv) -> None:
             backend=args.backend,
         )
     elif args.command == 'verify':
-        exec_verify(
-            pyteal_code_file=args.pyteal_code_file,
-            method=args.method
-        )
+        exec_verify(pyteal_code_file=args.pyteal_code_file, method=args.method)
+    elif args.command == 'simulate':
+        exec_simulate(pyteal_code_file=args.pyteal_code_file, methods=args.methods, backend=args.backend)
 
 
 def exec_test(
@@ -46,17 +46,40 @@ def exec_test(
 ) -> None:
     pyteal_code_module_str = str(pyteal_code_file).strip('.py').replace('/', '.')
     pytest.main(
-            [
+        [
+            "-s",
+            "--tb=no",
+            f"--hypothesis-verbosity={'verbose' if verbose else 'normal'}",
+            "--hypothesis-show-statistics",
+            f"--backend={backend}",
+            "--pyteal-code-module-str",
+            pyteal_code_module_str,
+            str(test_code_file),
+        ]
+    )
+
+
+def exec_simulate(pyteal_code_file: Path, methods: str, backend: str = 'kavm', verbose: bool = False) -> None:
+    if not verbose:
+        logging.getLogger('kavm.kavm').setLevel(logging.CRITICAL)
+        logging.getLogger('kavm.algod').setLevel(logging.CRITICAL)
+    pyteal_code_module_str = str(pyteal_code_file).strip('.py').replace('/', '.')
+    test_code_file = 'kcoin_vault/test_method_sequence.py'
+    # methods = 'mint(10000) burn(10000)'
+    sys.exit(
+        pytest.main(
+            args=[
                 "-s",
-                "--tb=short",
-                f"--hypothesis-verbosity={'verbose' if verbose else 'normal'}",
-                "--hypothesis-show-statistics",
+                f"--tb={'short' if verbose else 'no'}",
+                "--disable-warnings",
                 f"--backend={backend}",
-                "--pyteal-code-module-str",
-                pyteal_code_module_str,
+                f"--pyteal-code-module-str={pyteal_code_module_str}",
+                f"--methods={methods}",
                 str(test_code_file),
             ]
         )
+    )
+
 
 def exec_verify(
     pyteal_code_file: Path,
@@ -72,15 +95,13 @@ def exec_verify(
         app_id=1,
         sdk_app_creator_account_dict=sdk_app_creator_account_dict,
         sdk_app_account_dict=sdk_app_account_dict,
-        method_names = [method]
+        method_names=[method],
     )
     prover.prove(method)
 
 
 def create_argument_parser() -> ArgumentParser:
-    def list_of(
-        elem_type: Callable[[str], T], delim: str = ';'
-    ) -> Callable[[str], List[T]]:
+    def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], List[T]]:
         def parse(s: str) -> List[T]:
             return [elem_type(elem) for elem in s.split(delim)]
 
@@ -89,12 +110,8 @@ def create_argument_parser() -> ArgumentParser:
     parser = ArgumentParser(prog='kavm-demo')
 
     shared_args = ArgumentParser(add_help=False)
-    shared_args.add_argument(
-        '--verbose', '-v', default=False, action='store_true', help='Verbose output.'
-    )
-    shared_args.add_argument(
-        '--debug', default=False, action='store_true', help='Debug output.'
-    )
+    shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
+    shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
     shared_args.add_argument(
         '--profile',
         default=False,
@@ -108,9 +125,7 @@ def create_argument_parser() -> ArgumentParser:
         help='Path to the PyTeal source code file to test',
     )
 
-    command_parser = parser.add_subparsers(
-        dest='command', required=True, help='Command to execute'
-    )
+    command_parser = parser.add_subparsers(dest='command', required=True, help='Command to execute')
 
     # test
     test_subparser = command_parser.add_parser(
@@ -148,6 +163,28 @@ def create_argument_parser() -> ArgumentParser:
         help='Method of the contract to verify',
     )
 
+    # simulate
+    simulate_subparser = command_parser.add_parser(
+        'simulate',
+        help='Run a simulation',
+        parents=[shared_args],
+        allow_abbrev=False,
+    )
+    simulate_subparser.add_argument(
+        '--methods',
+        dest='methods',
+        type=str,
+        help='Method sequence to call',
+    )
+    simulate_subparser.add_argument(
+        '--backend',
+        dest='backend',
+        type=str,
+        choices=['kavm', 'sandbox'],
+        help='Interpreter to execute the tests with',
+        default='kavm',
+    )
+
     return parser
 
 
@@ -156,6 +193,7 @@ def _loglevel(args: Namespace) -> int:
         return logging.DEBUG
 
     return logging.INFO
+
 
 sdk_app_creator_account_dict = {
     "address": "DJPACABYNRWAEXBYKT4WMGJO5CL7EYRENXCUSG2IOJNO44A4PWFAGLOLIA",

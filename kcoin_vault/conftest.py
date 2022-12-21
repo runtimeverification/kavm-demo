@@ -19,6 +19,16 @@ def pytest_addoption(parser):
         choices=['kavm', 'sandbox'],
         help='AVM implementaion to run tests against',
     )
+    parser.addoption(
+        '--methods',
+        type=str,
+        help='Method sequence to call',
+    )
+
+
+@pytest.fixture(scope="session")
+def methods(pytestconfig):
+    return pytestconfig.getoption("methods").split()
 
 
 @pytest.fixture(scope="session")
@@ -45,9 +55,7 @@ def creator_account(request: Any) -> Dict[str, str]:
 
 
 @pytest.fixture(scope='session')
-def initial_state_fixture(
-    algod, creator_account, pyteal_code_module_str
-) -> Tuple[ContractClient, str, str]:
+def initial_state_fixture(algod, creator_account, pyteal_code_module_str) -> Tuple[ContractClient, str, str]:
     return (
         ContractClient(
             algod,

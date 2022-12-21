@@ -1,6 +1,8 @@
 import base64
 import importlib
+import pytest
 
+import pyteal
 import algosdk
 from algosdk.atomic_transaction_composer import AccountTransactionSigner, TransactionWithSigner
 from algosdk.future import transaction
@@ -28,11 +30,30 @@ class ContractClient:
         creator_private_key,
         pyteal_code_module,
     ) -> None:
+
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.setattr(
+                target=pyteal.Router,
+                name='hoare_method',
+                value=lambda *args, **kwargs: lambda _: None,
+                raising=False,
+            )
+            monkeypatch.setattr(
+                target=pyteal.Router,
+                name='precondition',
+                value=lambda *args, **kwargs: lambda _: None,
+                raising=False,
+            )
+            monkeypatch.setattr(
+                target=pyteal.Router,
+                name='postcondition',
+                value=lambda *args, **kwargs: lambda _: None,
+                raising=False,
+            )
+            config = importlib.import_module(pyteal_code_module)
+            approval_source, clear_source, self.contract_interface = config.compile_to_teal()
+
         self.algod = algod
-        config = importlib.import_module(pyteal_code_module)
-
-        approval_source, clear_source, self.contract_interface = config.compile_to_teal()
-
         # Compile approval and clear TEAL programs
         approval_program = compile_teal(algod, approval_source)
         clear_program = compile_teal(algod, clear_source)
