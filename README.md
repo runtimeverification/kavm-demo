@@ -158,23 +158,7 @@ poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault
 
 Hmm, the prover is unhappy this time:
 
-**TODO**: GIF for the failing burn
-
-```
-ERROR 2022-12-20 18:08:25 kavm.prover - Failed to verifiy specifiction for method: K-Coin-Vault-burn
-INFO 2022-12-20 18:08:25 kavm.prover - KAVM <returnstatus>: """"
-INFO 2022-12-20 18:08:25 kavm.prover - Constraints:
- #Not ( { b"\x15\x1f|u" +Bytes padLeftBytes ( Int2Bytes ( log2Int ( ASSET_TRANSFER_AMOUNT:Int *Int 1000 /Int 2000 ) +Int 8 /Int 8 , ASSET_TRANSFER_AMOUNT:Int *Int 1000 /Int 2000 , BE ) , 8 , 0 ) #Equals b"\x15\x1f|u" +Bytes padLeftBytes ( Int2Bytes ( log2Int ( ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 ) +Int 8 /Int 8 , ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 , BE ) , 8 , 0 ) } )
- #And { true #Equals 20000 >=Int ASSET_TRANSFER_AMOUNT:Int }
- #And { true #Equals 500000 -Int ASSET_TRANSFER_AMOUNT:Int >=Int 0 }
- #And { true #Equals 1000000 -Int ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 >=Int 100000 }
- #And { true #Equals 18446744073709551615 >=Int ASSET_TRANSFER_AMOUNT:Int }
- #And { true #Equals 18446744073709551615 >=Int ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 }
- #And { true #Equals ASSET_TRANSFER_AMOUNT:Int +Int 500000 >=Int 0 }
- #And { true #Equals ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 +Int 999999000000 >=Int 100000 }
- #And { true #Equals ASSET_TRANSFER_AMOUNT:Int >=Int 0 }
- #And { true #Equals ASSET_TRANSFER_AMOUNT:Int >=Int 10000 }
-```
+![verify-burn-final](https://user-images.githubusercontent.com/8296326/208942585-0f453a43-e07b-4be3-a1b2-89d7b95d15e9.gif)
 
 We see a message that something went wrong with the `burn` method and a bunch of scary-looking expressions. Let's try to make sense of them.
 
