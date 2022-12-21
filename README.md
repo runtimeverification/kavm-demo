@@ -146,7 +146,7 @@ Let's see what KAVM thinks about the spec:
 poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py --method mint
 ```
 
-**TODO**: GIF for the successful mint
+![t](https://user-images.githubusercontent.com/8296326/208934981-e2e2e345-0e0a-4c2b-b525-78b33fc00796.gif)
 
 It looks like the prover is happy with the `mint` method and its spec! But what about `burn`? Let's see:
 
