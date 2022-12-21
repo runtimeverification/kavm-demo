@@ -3,13 +3,11 @@
 ![t](https://user-images.githubusercontent.com/8296326/208934981-e2e2e345-0e0a-4c2b-b525-78b33fc00796.gif)
 
 
-AVM leverages [K Framework](https://kframework.org/) to provide automated formal verification for Algorand smart contracts. KAVM integrates with [`py-algorand-sdk`](https://py-algorand-sdk.readthedocs.io/en/latest/) and [PyTeal](https://pyteal.readthedocs.io/en/stable/). You can start using KAVM for verifying your contracts today!
+KAVM leverages the [K Framework](https://kframework.org/) to provide automated formal verification for Algorand smart contracts. KAVM integrates with [`py-algorand-sdk`](https://py-algorand-sdk.readthedocs.io/en/latest/) and [PyTeal](https://pyteal.readthedocs.io/en/stable/). You can start using KAVM for verifying your contracts today!
 
 Read on if you'd like to learn more!
 
-### How to install KAVM
-
-#### Install `kup` tool
+### Install KAVM
 
 The easiest way to install KAVM is provided by the `kup` tool. To install `kup`, run the following in your terminal:
 
@@ -17,7 +15,7 @@ The easiest way to install KAVM is provided by the `kup` tool. To install `kup`,
 bash <(curl https://kframework.org/install)
 ```
 
-The installation script will guide you through a simple process that will also install Nix on your system. Once the previous command finishes, which may take some time, `kup` should be available in your shell. To verify the installation, execute:
+The installation script will guide you through a simple process that will also install Nix on your system. Once the previous command finishes, `kup` should be available in your shell. To verify the installation, execute:
 
 ```
 kup list
@@ -39,7 +37,7 @@ Once `kup` and the K Framework are installed, we can proceed to installing `kavm
 kup install kavm
 ```
 
-<!-- In the screenshot above, we see kup reporting that the `kavm` package is available for installation. Proceed by typing `kup install kavm` to install it: -->
+Finally, executing `kup list` should report that `kup`, `k` and `kavm` are installed:
 
 ![2](https://user-images.githubusercontent.com/8296326/202645178-324a8bd2-cd8e-4eee-920d-6b4c65dd1241.png)
 
@@ -114,11 +112,11 @@ def mint(payment: abi.PaymentTransaction, *, output: abi.Uint64) -> Expr:
     """
     pass
 
-// ASSUME the asset transfer amount is greater or equal to 100000
+# ASSUME the asset transfer amount is greater or equal to 100000
 @router.precondition(expr='asset_transfer.get().amount() >= Int(10000)')
-// ASSUME the asset transfer amount is less or equal to 20000
+# ASSUME the asset transfer amount is less or equal to 20000
 @router.precondition(expr='asset_transfer.get().amount() <= Int(20000)')
-// VERIFY THAT the output of the method is the expected amount of microalgos
+# VERIFY THAT the output of the method is the expected amount of microalgos
 @router.postcondition(expr=f'output.get() == asset_transfer.get().amount() * Int({SCALING_FACTOR}) / Int({INITIAL_EXCHANGE_RATE})')
 @router.hoare_method
 @router.method
