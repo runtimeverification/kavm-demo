@@ -45,13 +45,13 @@ Finally, executing `kup list` should report that `kup`, `k` and `kavm` are insta
 
 ### KAVM demo: catching rounding errors
 
-Rounding errors in smart contracts can lead to severe security vulnerabilities and loss of funds. Rounding errors analysis is an important step are always perform in every smart contract audit that we do at Runtime Verification.
+Rounding errors in smart contracts can lead to severe security vulnerabilities and loss of funds. Rounding errors analysis is an important step we always perform in every smart contract audit that we do at Runtime Verification.
 
 In this tutorial, we will look at an Algorand smart contract implemented in PyTeal, which implements a Vault for K Coins. Users can interact with the Vault to *mint* K Coins in exchange for their Algos and to *burn* their K Coins to redeem the Algos. We will use KAVM to *formally verify* that the `mint` and `burn` methods of the KCoint Vault work as expected.
 
 #### Getting the demo source code
 
-We have packaged the contract's source code into a tiny Python package. The package sets-up the Python environment with the `poetry` tool. In case you do not have `poetry` installed, you can run the official [installer script](https://python-poetry.org/docs/#installation) like this:
+We have packaged the contract's source code into a tiny Python package. The package sets up the Python environment with the `poetry` tool. In case you do not have `poetry` installed, you can run the official [installer script](https://python-poetry.org/docs/#installation) like this:
 
 ```bash
 curl -sSL https://install.python-poetry.org | python3 -
@@ -65,7 +65,7 @@ cd kavm-demo
 poetry install
 ```
 
-Finally, KAVM needs some environment variables to access the `kup` installed K semantics. Temporary add them to your shell like this:
+Finally, KAVM needs some environment variables to access the `kup` installed K semantics. Temporarily add them to your shell like this:
 
 ```
 export $(kavm env)
@@ -73,7 +73,7 @@ export $(kavm env)
 
 #### The K Coin Vault contract
 
-The contract uses the PyTeal `Router` abstraction to define the [ABI](https://pyteal.readthedocs.io/en/stable/abi.html) of the contract, and plug the methods implementations into it. KAVM integrates with PyTeal and `py-algorant-sdk`, and provides additional capabilities that allow decorating PyTeal router methods with *preconditions* and *postconditions*. Preconditions specify the *assumptions* about method's arguments, and postconditions *assert* what the method's output must be. Let us have a look at the interface of the contract, with the implementation of the methods stripped down (full code available [here](https://github.com/runtimeverification/kavm-demo)):
+The contract uses the PyTeal `Router` abstraction to define the [ABI](https://pyteal.readthedocs.io/en/stable/abi.html) of the contract, and plug the methods' implementations into it. KAVM integrates with PyTeal and `py-algorant-sdk`, and provides additional capabilities that allow decorating PyTeal router methods with *preconditions* and *postconditions*. Preconditions specify the *assumptions* about a method's arguments, and postconditions *assert* what the method's output must be. Let us have a look at the interface of the contract, with the implementation of the methods stripped down (full code available [here](https://github.com/runtimeverification/kavm-demo)):
 
 ```python
 router = Router(
@@ -133,9 +133,9 @@ def burn(asset_transfer: abi.AssetTransferTransaction, *, output: abi.Uint64) ->
     pass
 ```
 
-The contract has three ABI methods (Python functions marked with the `@router.method` decorator) for the two user-actions (mint and burn) and the single admin-action (init_asset). Besides the ABI methods, the contract accepts only one [*bare call*](https://pyteal.readthedocs.io/en/stable/abi.html#creating-an-arc-4-program), which facilitate application deployment (creation of the application in the Algorand blockchain). All other bare calls, such as application code update, deletion and clear state are rejected.
+The contract has three ABI methods (Python functions marked with the `@router.method` decorator) for the two user-actions (mint and burn) and the single admin-action (init_asset). Besides the ABI methods, the contract accepts only one [*bare call*](https://pyteal.readthedocs.io/en/stable/abi.html#creating-an-arc-4-program), which facilitates application deployment (creation of the application in the Algorand blockchain). All other bare calls, such as application code update, deletion and clear state are rejected.
 
-KAVM adds three addition decorators to PyTeal's `Router` class, in addition to the standard `@router.method`. The `@router.hoare_method` specifies that this method is compatible with KAVM's [Hoare logic](https://en.wikipedia.org/wiki/Hoare_logic)-based automated prover. The `@router.precondition` decorator specifies the the assumtions we place on the method's arguments, while the `@router.postcondition` asserts the result.
+KAVM adds three additional decorators to PyTeal's `Router` class, in addition to the standard `@router.method`. The `@router.hoare_method` specifies that this method is compatible with KAVM's [Hoare logic](https://en.wikipedia.org/wiki/Hoare_logic)-based automated prover. The `@router.precondition` decorator specifies the assumptions we place on the method's arguments, while the `@router.postcondition` asserts the result.
 
 Enough talking! Let's get our hand dirty and verify the specification!
 
@@ -164,7 +164,7 @@ Hmm, the prover is unhappy this time:
 
 We see a message that something went wrong with the `burn` method and a bunch of scary-looking expressions. Let's try to make sense of them.
 
-The first question we should ask is: "where are the variables from the spec?". Remember, that the spec we wanted the prover to verify was accessing the `asset_transfer.get().amount()` value, the asset transfer amount. Inside KAVM, this value becomes *symbolic* and gets the name `ASSET_TRANSFER_AMOUNT` of sort `Int`. Anyway, where are the `precondition`s? We wanted the amount to be between 10000 and 20000, did the prover even consider our spec? Let's sort the thing out a bit. Here's the table that translates the Matching Logic constraints into a more familiar PyTeal expressions:
+The first question we should ask is: "where are the variables from the spec?". Remember, that the spec we wanted the prover to verify was accessing the `asset_transfer.get().amount()` value, the asset transfer amount. Inside KAVM, this value becomes *symbolic* and gets the name `ASSET_TRANSFER_AMOUNT` of sort `Int`. Anyway, where are the `precondition`s? We wanted the amount to be between 10000 and 20000, did the prover even consider our spec? Let's sort the thing out a bit. Here's the table that translates the Matching Logic constraints into more familiar PyTeal expressions:
 
 
 |   | Matching Logic                                                                              | PyTeal                                                                    |
@@ -180,15 +180,15 @@ The first question we should ask is: "where are the variables from the spec?". R
 | 9 | `true #Equals ASSET_TRANSFER_AMOUNT:Int >=Int 10000`                                        | `asset_transfer.get().amount() >= 10000`                                  |
 
 
-The first and the last row in the table above correspond to the preconditions that we've put onto the `asset_transfer` amount. What are the other expressions? They are called side-conditions, or path-conditions --- and are inserted by KAVM during symbolic execution. In the nutshell, these conditions represent the symbolic path that KAVM has followed through the contract's code while execution the `burn` method.
+The first and the last row in the table above correspond to the preconditions that we've put onto the `asset_transfer` amount. What are the other expressions? They are called side-conditions, or path-conditions --- and are inserted by KAVM during symbolic execution. In a nutshell, these conditions represent the symbolic path that KAVM has followed through the contract's code while executing the `burn` method.
 
-Note that we have intentionally omitted the last expression from the table, which describes the `output`, i.e. the result of the contract. We will soon see, that it's the symbolic form of the output that has caused the proof to fail. But first, let's make a break form all this symbolic stuff!
+Note that we have intentionally omitted the last expression from the table, which describes the `output`, i.e. the result of the contract. We will soon see that it's the symbolic form of the output that has caused the proof to fail. But first, let's take a break form all this symbolic stuff!
 
 ### Symbolic execution? Matching logic?? Just give me counterexamples!
 
 Have you ever been feeling intimidated by formal verification? We have! That's why we want to make it *understandable*! And what's easier to understand than concrete examples?
 
-KAVM is also capable of concrete execution. Effectively, KAVM can act as the Algorand Sandbox, by integrating the K's concrete execution backend with `py-algorand-sdk`. For this demo, we have created a simple `pytest`-based tester that allows executing sequences of methods. For example, let's try a simple example that replicates the failing proof:
+KAVM is also capable of concrete execution. Effectively, KAVM can act as the Algorand Sandbox, by integrating K's concrete execution backend with `py-algorand-sdk`. For this demo, we have created a simple `pytest`-based tester that allows executing sequences of methods. For example, let's try a simple example that replicates the failing proof:
 
 ```
 poetry run kavm-demo simulate --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py \
@@ -244,9 +244,9 @@ It turns out, KAVM has already reported this error, and that's why the verificat
 ASSET_TRANSFER_AMOUNT:Int *Int 1000 /Int 2000 != ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000
 ```
 
-The constraint, in it's Matching Logic form, looks rather terrible, but it down to a simple inequality of the form `X * Y / Z != X / Z * Y`. But how come these are different? They are, because Algorand smart contracts (well, any smart contracts, really) operate with fixed-point numbers, rather than with floating-point numbers, i.e. the `/` operation in PyTeal is, in fact, integer division.
+The constraint, in its Matching Logic form, looks rather terrible, but it boils down to a simple inequality of the form `X * Y / Z != X / Z * Y`. But how come these are different? They are, because Algorand smart contracts (well, any smart contracts, really) operate with fixed-point numbers, rather than with floating-point numbers, i.e. the `/` operation in PyTeal is, in fact, integer division.
 
-So, where does the error comes from? Let's look at the PyTeal subroutine that converts micro K coins to microalgos, which is used internally by the `burn` method's implementation:
+So, where does the error come from? Let's look at the PyTeal subroutine that converts micro K coins to microalgos, which is used internally by the `burn` method's implementation:
 
 ```python
 @Subroutine(TealType.uint64)
@@ -273,7 +273,7 @@ Indeed, the postcondition has the right order of operations: scale the value up 
 
 #### Fixing the code and verifying
 
-The corrected implementation of the K Coint Vault contract can be found in `kcoin_vault/kcoin_vault_pyteal_fixed.py`. We can verify it with the following two commands:
+The corrected implementation of the K Coin Vault contract can be found in `kcoin_vault/kcoin_vault_pyteal_fixed.py`. We can verify it with the following two commands:
 
 ```
 poetry run kavm-demo verify --verbose \
@@ -286,15 +286,15 @@ The prover should now report success for both methods!
 
 ### What's next
 
-We hope this small demo has pursued you that the Algorand ecosystem not has a formal verification tool! While the user interface is somewhat limited now, we're working very hard to scale it up and integrate seamlessly into the existing tooling. Try [KAVM](https://github.com/runtimeverification/avm-semantics/) today, it's free and open source!
+We hope this small demo has persuaded you that the Algorand ecosystem now has a formal verification tool! While the user interface is somewhat limited now, we're working very hard to scale it up and integrate seamlessly into the existing tooling. Try [KAVM](https://github.com/runtimeverification/avm-semantics/) today, it's free and open source!
 
 #### Integration with Algorand Beaker
 
-The [Beaker](https://developer.algorand.org/articles/hello-beaker/) is an Algorand smart contract development framework that makes designing, testing, and deploying PyTeal smart contracts much easier. Since Beaker leverages `py-algorand-sdk` to interact with an Algorand node or sandbox, it will be able to use KAVM as a backend too. Yes, with Beaker we'd be able to use KAVM as a drop-in replacement for the Algorand Sandbox, thus making it trivial to bring  formal verification, to any Beaker-powered project.
+The [Beaker](https://developer.algorand.org/articles/hello-beaker/) is an Algorand smart contract development framework that makes designing, testing, and deploying PyTeal smart contracts much easier. Since Beaker leverages `py-algorand-sdk` to interact with an Algorand node or sandbox, it will be able to use KAVM as a backend too. Yes, with Beaker we'd be able to use KAVM as a drop-in replacement for the Algorand Sandbox, thus making it trivial to bring formal verification, to any Beaker-powered project.
 
 #### Support for global and local state in specifications
 
-So far KAVM's `AutoProver` only allows placing pre and postcondition on methods' arguments and output. A natural next step would be to allow specifying the form for global state, local state and box storage. While this is available users experienced with K, the Python interface will be augmented with this ability soon.
+So far KAVM's `AutoProver` only allows placing pre- and postconditions on methods' arguments and output. A natural next step would be to allow specifying the form for global state, local state and box storage. While this is available to users experienced with K, the Python interface will be augmented with this ability soon.
 
 ### Concluding remarks
 
