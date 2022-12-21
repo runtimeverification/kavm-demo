@@ -1,12 +1,9 @@
 ## Automatic Formal Verification for Algorand Smart Contracts with KAVM
 
-KAVM leverages [K Framework](https://kframework.org/) to provide fast property-testing and formal verification for Algorand smart contracts.
+![t](https://user-images.githubusercontent.com/8296326/208934981-e2e2e345-0e0a-4c2b-b525-78b33fc00796.gif)
 
-Here's KAVM in action:
 
-![kavm-demo](https://user-images.githubusercontent.com/8296326/203607413-057cc6a5-d11b-4055-b332-63da26e15745.gif)
-
-KAVM integrates with [`py-algorand-sdk`](https://py-algorand-sdk.readthedocs.io/en/latest/) and [PyTeal](https://pyteal.readthedocs.io/en/stable/). You can start using KAVM for testing your contracts today!
+AVM leverages [K Framework](https://kframework.org/) to provide automated formal verification for Algorand smart contracts. KAVM integrates with [`py-algorand-sdk`](https://py-algorand-sdk.readthedocs.io/en/latest/) and [PyTeal](https://pyteal.readthedocs.io/en/stable/). You can start using KAVM for verifying your contracts today!
 
 Read on if you'd like to learn more!
 
