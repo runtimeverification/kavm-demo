@@ -145,7 +145,8 @@ Again, the specification of the `mint` method says that, under certain assumptio
 Let's see what KAVM thinks about the spec:
 
 ```
-poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py --method mint
+poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py \
+  --method mint
 ```
 
 ![t](https://user-images.githubusercontent.com/8296326/208934981-e2e2e345-0e0a-4c2b-b525-78b33fc00796.gif)
@@ -153,7 +154,8 @@ poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault
 It looks like the prover is happy with the `mint` method and its spec! But what about `burn`? Let's see:
 
 ```
-poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py --method burn
+poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py \
+  --method burn
 ```
 
 Hmm, the prover is unhappy this time:
@@ -165,29 +167,32 @@ We see a message that something went wrong with the `burn` method and a bunch of
 The first question we should ask is: "where are the variables from the spec?". Remember, that the spec we wanted the prover to verify was accessing the `asset_transfer.get().amount()` value, the asset transfer amount. Inside KAVM, this value becomes *symbolic* and gets the name `ASSET_TRANSFER_AMOUNT` of sort `Int`. Anyway, where are the `precondition`s? We wanted the amount to be between 10000 and 20000, did the prover even consider our spec? Let's sort the thing out a bit. Here's the table that translates the Matching Logic constraints into a more familiar PyTeal expressions:
 
 
-|   | Matching Logic                                                                                       | PyTeal                                                                    |
-|:--|:-----------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------|
-| 1 | `#And { true #Equals 20000 >=Int ASSET_TRANSFER_AMOUNT:Int }`                                        | `20000 >= asset_transfer.get().amount()`                                  |
-| 2 | `#And { true #Equals 500000 -Int ASSET_TRANSFER_AMOUNT:Int >=Int 0 }`                                | `50000 - asset_transfer.get().amount() >= 0`                              |
-| 3 | `#And { true #Equals 1000000 -Int ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 >=Int 100000 }`      | `100000 - asset_transfer.get().amount() / 2000 * 1000 >= 100000`          |
-| 4 | `#And { true #Equals 18446744073709551615 >=Int ASSET_TRANSFER_AMOUNT:Int }`                         | `MAX_UINT64 >= asset_transfer.get().amount()`                             |
-| 5 | `#And { true #Equals 18446744073709551615 >=Int ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 }`     | `MAX_UINT64 >= asset_transfer.get().amount() / 2000 * 1000`               |
-| 6 | `#And { true #Equals ASSET_TRANSFER_AMOUNT:Int +Int 500000 >=Int 0 }`                                | `asset_transfer.get().amount() + 50000 >= 0`                              |
-| 7 | `#And { true #Equals ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 +Int 999999000000 >=Int 100000 }` | `asset_transfer.get().amount() / 2000 * 1000 +Int 999999000000 >= 100000` |
-| 8 | `#And { true #Equals ASSET_TRANSFER_AMOUNT:Int >=Int 0 }`                                            | `asset_transfer.get().amount() >= 0`                                      |
-| 9 | `#And { true #Equals ASSET_TRANSFER_AMOUNT:Int >=Int 10000 }`                                        | `asset_transfer.get().amount() >= 10000`                                  |
+|   | Matching Logic                                                                              | PyTeal                                                                    |
+|:--|:--------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------|
+| 1 | `true #Equals 20000 >=Int ASSET_TRANSFER_AMOUNT:Int`                                        | `20000 >= asset_transfer.get().amount()`                                  |
+| 2 | `true #Equals 500000 -Int ASSET_TRANSFER_AMOUNT:Int >=Int 0`                                | `50000 - asset_transfer.get().amount() >= 0`                              |
+| 3 | `true #Equals 1000000 -Int ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 >=Int 100000`      | `100000 - asset_transfer.get().amount() / 2000 * 1000 >= 100000`          |
+| 4 | `true #Equals 18446744073709551615 >=Int ASSET_TRANSFER_AMOUNT:Int`                         | `MAX_UINT64 >= asset_transfer.get().amount()`                             |
+| 5 | `true #Equals 18446744073709551615 >=Int ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000`     | `MAX_UINT64 >= asset_transfer.get().amount() / 2000 * 1000`               |
+| 6 | `true #Equals ASSET_TRANSFER_AMOUNT:Int +Int 500000 >=Int 0`                                | `asset_transfer.get().amount() + 50000 >= 0`                              |
+| 7 | `true #Equals ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 +Int 999999000000 >=Int 100000` | `asset_transfer.get().amount() / 2000 * 1000 +Int 999999000000 >= 100000` |
+| 8 | `true #Equals ASSET_TRANSFER_AMOUNT:Int >=Int 0`                                            | `asset_transfer.get().amount() >= 0`                                      |
+| 9 | `true #Equals ASSET_TRANSFER_AMOUNT:Int >=Int 10000`                                        | `asset_transfer.get().amount() >= 10000`                                  |
 
 
-**TODO**: more explanations
+The first and the last row in the table above correspond to the preconditions that we've put onto the `asset_transfer` amount. What are the other expressions? They are called side-conditions, or path-conditions --- and are inserted by KAVM during symbolic execution. In the nutshell, these conditions represent the symbolic path that KAVM has followed through the contract's code while execution the `burn` method.
 
-### "Symbolic execution? Matching logic?? Just give me counterexamples!"
+Note that we have intentionally omitted the last expression from the table, which describes the `output`, i.e. the result of the contract. We will soon see, that it's the symbolic form of the output that has caused the proof to fail. But first, let's make a break form all this symbolic stuff!
 
-Have you ever been feeling intimidated by formal verification? We have! That's why we want to make it *understandable*! And what's easier to understand than *concrete* examples?
+### Symbolic execution? Matching logic?? Just give me counterexamples!
+
+Have you ever been feeling intimidated by formal verification? We have! That's why we want to make it *understandable*! And what's easier to understand than concrete examples?
 
 KAVM is also capable of concrete execution. Effectively, KAVM can act as the Algorand Sandbox, by integrating the K's concrete execution backend with `py-algorand-sdk`. For this demo, we have created a simple `pytest`-based tester that allows executing sequences of methods. For example, let's try a simple example that replicates the failing proof:
 
 ```
-poetry run kavm-demo simulate --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py --methods 'mint(10000) burn(20000)' --backend kavm --verbose
+poetry run kavm-demo simulate --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py \
+  --methods 'mint(10000) burn(20000)' --backend kavm --verbose
 ```
 
 Hmm, looks like the test has passed:
@@ -204,7 +209,8 @@ INFO 2022-12-21 13:47:24 kcoin_vault.test_method_sequence - burn(20000) => 10000
 How come?? The proof has been failing with these constraints. Well, the thing is that the error is much sneakier than one might expect! Let's try another example, with a smaller amount to burn:
 
 ```
-poetry run kavm-demo simulate --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py --methods 'mint(10000) burn(999)' --backend kavm --verbose
+poetry run kavm-demo simulate --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py \
+  --methods 'mint(10000) burn(999)' --backend kavm --verbose
 ```
 
 ```
@@ -223,7 +229,15 @@ Aha! So, burning 999 micro K coins produces 0 microalgos... that doesn't seem ri
 It turns out, KAVM has already reported this error, and that's why the verification of the `burn` method has been failing, even though we've constrained the amount to burn to be much larger than 999. Let's have a look at the verification constraints again, and strip down the unnecessary details:
 
 ```
- #Not ( { b"\x15\x1f|u" +Bytes padLeftBytes ( Int2Bytes ( log2Int ( ASSET_TRANSFER_AMOUNT:Int *Int 1000 /Int 2000 ) +Int 8 /Int 8 , ASSET_TRANSFER_AMOUNT:Int *Int 1000 /Int 2000 , BE ) , 8 , 0 ) #Equals b"\x15\x1f|u" +Bytes padLeftBytes ( Int2Bytes ( log2Int ( ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 ) +Int 8 /Int 8 , ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 , BE ) , 8 , 0 ) } )
+ #Not ({
+   b"\x15\x1f|u" +Bytes padLeftBytes ( Int2Bytes ( log2Int (
+     ASSET_TRANSFER_AMOUNT:Int *Int 1000 /Int 2000
+     ) +Int 8 /Int 8 , ASSET_TRANSFER_AMOUNT:Int *Int 1000 /Int 2000 , BE ) , 8 , 0 )
+   #Equals
+   b"\x15\x1f|u" +Bytes padLeftBytes ( Int2Bytes ( log2Int (
+     ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000
+     ) +Int 8 /Int 8 , ASSET_TRANSFER_AMOUNT:Int /Int 2000 *Int 1000 , BE ) , 8 , 0 )
+   } )
 
 => {rewrite in PyTeal} =>
 
@@ -250,7 +264,9 @@ When we look at the PyTeal `Expr` that this function builds, we see that the ord
 KAVM has managed to catch this error because the *symbolic* expression representing the `output` of the `burn` method was different from the postcondition that we specified:
 
 ```
-@router.postcondition(expr=f'output.get() == asset_transfer.get().amount() * Int({SCALING_FACTOR}) / Int({INITIAL_EXCHANGE_RATE})')
+@router.postcondition(
+    expr=f'output.get() == asset_transfer.get().amount() * Int({SCALING_FACTOR}) / Int({INITIAL_EXCHANGE_RATE})'
+    )
 ```
 
 Indeed, the postcondition has the right order of operations: scale the value up first, and then divide by the exchange rate. That's how symbolic execution can find subtle errors that can lead to loss of user and/or contract funds.
@@ -260,8 +276,10 @@ Indeed, the postcondition has the right order of operations: scale the value up 
 The corrected implementation of the K Coint Vault contract can be found in `kcoin_vault/kcoin_vault_pyteal_fixed.py`. We can verify it with the following two commands:
 
 ```
-poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal_fixed.py --method mint
-poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal_fixed.py --method burn
+poetry run kavm-demo verify --verbose \
+    --pyteal-code-file kcoin_vault/kcoin_vault_pyteal_fixed.py --method mint
+poetry run kavm-demo verify --verbose \
+    --pyteal-code-file kcoin_vault/kcoin_vault_pyteal_fixed.py --method burn
 ```
 
 The prover should now report success for both methods!
