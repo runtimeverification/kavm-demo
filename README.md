@@ -158,7 +158,7 @@ poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault
 
 Hmm, the prover is unhappy this time:
 
-![verify-burn-final](https://user-images.githubusercontent.com/8296326/208942585-0f453a43-e07b-4be3-a1b2-89d7b95d15e9.gif)
+![verify-burn](https://user-images.githubusercontent.com/8296326/212866705-2e029b0c-0a95-4c03-b35d-8aa5d7d82d1a.gif)
 
 We see a message that something went wrong with the `burn` method and a bunch of scary-looking expressions. Let's try to make sense of them.
 
