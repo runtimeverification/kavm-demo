@@ -1,7 +1,6 @@
 ## Automatic Formal Verification for Algorand Smart Contracts with KAVM
 
-![t](https://user-images.githubusercontent.com/8296326/208934981-e2e2e345-0e0a-4c2b-b525-78b33fc00796.gif)
-
+![verify-mint-optimized](https://user-images.githubusercontent.com/8296326/212864253-f19b29da-53ee-449e-9b47-09dde7f39ab2.gif)
 
 KAVM leverages the [K Framework](https://kframework.org/) to provide automated formal verification for Algorand smart contracts. KAVM integrates with [`py-algorand-sdk`](https://py-algorand-sdk.readthedocs.io/en/latest/) and [PyTeal](https://pyteal.readthedocs.io/en/stable/). You can start using KAVM for verifying your contracts today!
 
@@ -148,8 +147,7 @@ Let's see what KAVM thinks about the spec:
 poetry run kavm-demo verify --verbose --pyteal-code-file kcoin_vault/kcoin_vault_pyteal.py \
   --method mint
 ```
-
-![t](https://user-images.githubusercontent.com/8296326/208934981-e2e2e345-0e0a-4c2b-b525-78b33fc00796.gif)
+![verify-mint-optimized](https://user-images.githubusercontent.com/8296326/212864253-f19b29da-53ee-449e-9b47-09dde7f39ab2.gif)
 
 It looks like the prover is happy with the `mint` method and its spec! But what about `burn`? Let's see:
 
