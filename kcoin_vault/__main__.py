@@ -3,10 +3,14 @@ import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Callable, Final, List, TypeVar
+import importlib
+
+import pyteal
 
 import coloredlogs
 import pytest
 from kavm.prover import AutoProver
+import kavm
 from pyk.cli_utils import file_path
 
 T = TypeVar('T')
@@ -87,22 +91,45 @@ def exec_verify(
     pyteal_code_file: Path,
     method: str,
 ) -> None:
-    pyteal_code_module_str = str(pyteal_code_file).strip('.py').replace('/', '.')
-    sys.setrecursionlimit(15000000)
+    # monkey path the pyteal.Router class with pre-/post-conditions decorators
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(
+            target=pyteal.Router,
+            name='hoare_method',
+            value=kavm.prover.router_hoare_method,
+            raising=False,
+        )
+        monkeypatch.setattr(
+            target=pyteal.Router,
+            name='precondition',
+            value=kavm.prover.router_precondition,
+            raising=False,
+        )
+        monkeypatch.setattr(
+            target=pyteal.Router,
+            name='postcondition',
+            value=kavm.prover.router_postcondition,
+            raising=False,
+        )
 
-    _LOGGER.info(f'Verifying specifications in module {pyteal_code_module_str}')
+        pyteal_code_module_str = str(pyteal_code_file).strip('.py').replace('/', '.')
+        pyteal_module = importlib.import_module(pyteal_code_module_str)
+        sys.setrecursionlimit(15000000)
 
-    # Note that KAVM can use account data that is retrived from Algorand Node REST API.
-    # We define the account data for the KCoin Vault contract and its creator at the
-    # bottom of this file for portability.
-    prover = AutoProver(
-        pyteal_module_name=pyteal_code_module_str,
-        app_id=1,
-        sdk_app_creator_account_dict=sdk_app_creator_account_dict,
-        sdk_app_account_dict=sdk_app_account_dict,
-        method_names=[method],
-    )
-    prover.prove(method)
+        _LOGGER.info(f'Verifying specifications in module {pyteal_code_module_str}')
+
+        # Note that KAVM can use account data that is retrived from Algorand Node REST API.
+        # We define the account data for the KCoin Vault contract and its creator at the
+        # bottom of this file for portability.
+        prover = AutoProver(
+            # pyteal_module_name=pyteal_code_module_str,
+            beaker_application=pyteal_module.KCoinVault(version=6, assemble_constants=False),
+            app_id=1,
+            sdk_app_creator_account_dict=sdk_app_creator_account_dict,
+            sdk_app_account_dict=sdk_app_account_dict,
+            method_names=[method],
+        )
+        prover.prove(method)
 
 
 def create_argument_parser() -> ArgumentParser:

@@ -12,9 +12,11 @@ pytest = "^7.2.0"
 hypothesis = "^6.58.0"
 py-algorand-sdk = "^1.20.1"
 pyteal = "^0.20.1"
+# beaker-pyteal = "0.4.2"
+beaker-pyteal = { path = "../beaker/", develop = true }
 coloredlogs = "^15.0.1"
-kavm = { git = "https://github.com/runtimeverification/avm-semantics.git", subdirectory = "kavm", branch = "integrate-autoprover-2"  }
-# kavm = { path = "../avm-semantics/kavm/", develop = true }
+# kavm = { git = "https://github.com/runtimeverification/avm-semantics.git", subdirectory = "kavm", branch = "integrate-autoprover-2"  }
+kavm = { path = "../avm-semantics/kavm/", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
@@ -47,3 +49,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 kavm-demo = 'kcoin_vault.__main__:run_demo'
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(levelname)s %(asctime)s %(name)s - %(message)s"
