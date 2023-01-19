@@ -51,7 +51,7 @@ def exec_test(
     pytest.main(
         [
             "-s",
-            "--tb=no",
+            f"--tb={'long' if verbose else 'no'}",
             f"--hypothesis-verbosity={'verbose' if verbose else 'normal'}",
             "--hypothesis-show-statistics",
             f"--backend={backend}",
@@ -72,7 +72,7 @@ def exec_simulate(pyteal_code_file: Path, methods: str, backend: str = 'kavm', v
         pytest.main(
             args=[
                 "-s",
-                f"--tb={'short' if verbose else 'no'}",
+                f"--tb={'long' if verbose else 'no'}",
                 "--disable-warnings",
                 f"--backend={backend}",
                 f"--pyteal-code-module-str={pyteal_code_module_str}",
