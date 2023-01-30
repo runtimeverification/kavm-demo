@@ -72,7 +72,7 @@ export $(kavm env)
 
 #### The K Coin Vault contract
 
-The contract uses the PyTeal `Router` abstraction to define the [ABI](https://pyteal.readthedocs.io/en/stable/abi.html) of the contract, and plug the methods' implementations into it. KAVM integrates with PyTeal and `py-algorant-sdk`, and provides additional capabilities that allow decorating PyTeal router methods with *preconditions* and *postconditions*. Preconditions specify the *assumptions* about a method's arguments, and postconditions *assert* what the method's output must be. Let us have a look at the interface of the contract, with the implementation of the methods stripped down (full code available [here](https://github.com/runtimeverification/kavm-demo)):
+The contract uses the PyTeal `Router` abstraction to define the [ABI](https://pyteal.readthedocs.io/en/stable/abi.html) of the contract, and plug the methods' implementations into it. KAVM integrates with PyTeal and `py-algorand-sdk`, and provides additional capabilities that allow decorating PyTeal router methods with *preconditions* and *postconditions*. Preconditions specify the *assumptions* about a method's arguments, and postconditions *assert* what the method's output must be. Let us have a look at the interface of the contract, with the implementation of the methods stripped down (full code available [here](https://github.com/runtimeverification/kavm-demo)):
 
 ```python
 router = Router(
