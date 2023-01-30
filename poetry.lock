@@ -729,7 +729,7 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kavm"
-version = "0.1.28"
+version = "0.1.38"
 description = "Python bindings and command-line interface for KAVM"
 category = "main"
 optional = false
@@ -739,7 +739,7 @@ develop = false
 
 [package.dependencies]
 py-algorand-sdk = "1.20.1"
-pyk = {git = "https://github.com/runtimeverification/pyk.git", tag = "v0.1.93"}
+pyk = {git = "https://github.com/runtimeverification/pyk.git", tag = "v0.1.102"}
 pyteal = "0.20.1"
 tabulate = "0.8.10"
 types-tabulate = "0.8.10"
@@ -747,8 +747,8 @@ types-tabulate = "0.8.10"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/avm-semantics.git"
-reference = "HEAD"
-resolved_reference = "b4cf43d456ddf0bfa608a1fa61844dc7bb1c5dba"
+reference = "kavm-demo"
+resolved_reference = "5bf7f6b791714cbdf84a4ac248d39df0118f1ee9"
 subdirectory = "kavm"
 [[package]]
 name = "markupsafe"
@@ -1159,7 +1159,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.93"
+version = "0.1.102"
 description = ""
 category = "main"
 optional = false
@@ -1180,8 +1180,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.93"
-resolved_reference = "e025961b38667a01cab1dfd44c4d0eb684ed8441"
+reference = "v0.1.102"
+resolved_reference = "d416610a8024cf02f7277fd76d0d4a7edfd5a0a5"
 
 [[package]]
 name = "pynacl"
@@ -1583,4 +1583,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2442baa51f6c3538337fe95cb0e06aea0486f18e4cbaeb20e29e5d2d183393e7"
+content-hash = "febe3df7f09481d577c835c5835bcf0be5ca4276e28ffe6663b40ccea2683462"
