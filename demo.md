@@ -1,4 +1,4 @@
-## Automatic Formal Verification for Algorand Smart Contracts with KAVM
+# Automatic Formal Verification for Algorand Smart Contracts with KAVM
 
 ![verify-mint-optimized](https://user-images.githubusercontent.com/8296326/212864253-f19b29da-53ee-449e-9b47-09dde7f39ab2.gif)
 
@@ -6,7 +6,7 @@ KAVM leverages the [K Framework](https://kframework.org/) to provide automated f
 
 Read on if you'd like to learn more!
 
-### Install KAVM
+## Install KAVM
 
 The easiest way to install KAVM is provided by the `kup` tool. To install `kup`, run the following in your terminal:
 
@@ -42,19 +42,23 @@ Finally, executing `kup list` should report that `kup`, `k` and `kavm` are insta
 ![2](https://user-images.githubusercontent.com/8296326/208937184-36e8861f-dfa0-4709-b28d-1dcf185f5925.png)
 
 
-### KAVM demo: catching rounding errors
+## KAVM demo: catching rounding errors
 
 Rounding errors in smart contracts can lead to severe security vulnerabilities and loss of funds. Rounding errors analysis is an important step we always perform in every smart contract audit that we do at Runtime Verification.
 
 In this tutorial, we will look at an Algorand smart contract implemented in PyTeal, which implements a Vault for K Coins. Users can interact with the Vault to *mint* K Coins in exchange for their Algos and to *burn* their K Coins to redeem the Algos. We will use KAVM to *formally verify* that the `mint` and `burn` methods of the KCoint Vault work as expected.
 
-#### Getting the demo source code
+We have packaged the contract's source code into a tiny Python package. The package sets up the Python environment with the `poetry` tool.
 
-We have packaged the contract's source code into a tiny Python package. The package sets up the Python environment with the `poetry` tool. In case you do not have `poetry` installed, you can run the official [installer script](https://python-poetry.org/docs/#installation) like this:
+### Setting up `poetry`
+
+In case you do not have `poetry` installed, you can run the official [installer script](https://python-poetry.org/docs/#installation) like this:
 
 ```bash
 curl -sSL https://install.python-poetry.org | python3 -
 ```
+
+### Getting the demo source code
 
 Once `poetry` is set-up, clone the `kavm-demo` repository and change into it:
 
@@ -64,13 +68,31 @@ cd kavm-demo
 poetry install
 ```
 
+#### If `poetry install` fails...
+
+Note that `poetry` needs to use the system Git client to correctly [handle submodules](https://github.com/python-poetry/poetry/issues/6499). We've places the necessary setting in `poetry.toml`, so that should work without any additional actions. In case it does not, execute:
+
+```
+poetry config experimental.system-git-client true
+```
+
+In case `poetry install` still complains (about a missing keyring or prompts you for password), then you're likely hitting another [issue](https://github.com/python-poetry/poetry/issues/1917) pf `poetry`. Please execute the following command:
+
+```
+export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+```
+
+and run `poetry install` again.
+
+#### Enabling KAVM in your current shell
+
 Finally, KAVM needs some environment variables to access the `kup` installed K semantics. Temporarily add them to your shell like this:
 
 ```
 export $(kavm env)
 ```
 
-#### The K Coin Vault contract
+### The K Coin Vault contract
 
 The contract uses the PyTeal `Router` abstraction to define the [ABI](https://pyteal.readthedocs.io/en/stable/abi.html) of the contract, and plug the methods' implementations into it. KAVM integrates with PyTeal and `py-algorand-sdk`, and provides additional capabilities that allow decorating PyTeal router methods with *preconditions* and *postconditions*. Preconditions specify the *assumptions* about a method's arguments, and postconditions *assert* what the method's output must be. Let us have a look at the interface of the contract, with the implementation of the methods stripped down (full code available [here](https://github.com/runtimeverification/kavm-demo)):
 
@@ -138,7 +160,7 @@ KAVM adds three additional decorators to PyTeal's `Router` class, in addition to
 
 Enough talking! Let's get our hand dirty and verify the specification!
 
-#### Running the KAVM prover
+### Running the KAVM prover
 
 Again, the specification of the `mint` method says that, under certain assumptions, the method should succeed and return the minted amount.
 Let's see what KAVM thinks about the spec:
@@ -182,7 +204,7 @@ The first and the last row in the table above correspond to the preconditions th
 
 Note that we have intentionally omitted the last expression from the table, which describes the `output`, i.e. the result of the contract. We will soon see that it's the symbolic form of the output that has caused the proof to fail. But first, let's take a break form all this symbolic stuff!
 
-### Symbolic execution? Matching logic?? Just give me counterexamples!
+## Symbolic execution? Matching logic?? Just give me counterexamples!
 
 Have you ever been feeling intimidated by formal verification? We have! That's why we want to make it *understandable*! And what's easier to understand than concrete examples?
 
@@ -269,7 +291,7 @@ KAVM has managed to catch this error because the *symbolic* expression represent
 
 Indeed, the postcondition has the right order of operations: scale the value up first, and then divide by the exchange rate. That's how symbolic execution can find subtle errors that can lead to loss of user and/or contract funds.
 
-#### Fixing the code and verifying
+### Fixing the code and verifying
 
 The corrected implementation of the K Coin Vault contract can be found in `kcoin_vault/kcoin_vault_pyteal_fixed.py`. We can verify it with the following two commands:
 
@@ -282,19 +304,19 @@ poetry run kavm-demo verify --verbose \
 
 The prover should now report success for both methods!
 
-### What's next
+## What's next
 
 We hope this small demo has persuaded you that the Algorand ecosystem now has a formal verification tool! While the user interface is somewhat limited now, we're working very hard to scale it up and integrate seamlessly into the existing tooling. Try [KAVM](https://github.com/runtimeverification/avm-semantics/) today, it's free and open source!
 
-#### Integration with Algorand Beaker
+### Integration with Algorand Beaker
 
 The [Beaker](https://developer.algorand.org/articles/hello-beaker/) is an Algorand smart contract development framework that makes designing, testing, and deploying PyTeal smart contracts much easier. Since Beaker leverages `py-algorand-sdk` to interact with an Algorand node or sandbox, it will be able to use KAVM as a backend too. Yes, with Beaker we'd be able to use KAVM as a drop-in replacement for the Algorand Sandbox, thus making it trivial to bring formal verification, to any Beaker-powered project.
 
-#### Support for global and local state in specifications
+### Support for global and local state in specifications
 
 So far KAVM's `AutoProver` only allows placing pre- and postconditions on methods' arguments and output. A natural next step would be to allow specifying the form for global state, local state and box storage. While this is available to users experienced with K, the Python interface will be augmented with this ability soon.
 
-### Concluding remarks
+## Concluding remarks
 
 KAVM is developed by [Runtime Verification](https://runtimeverification.com/) with support from the Algorand Foundation.
 
